@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!-- link to main stylesheet -->
+		<link rel="stylesheet" type="text/css" href="/css/main.css">
+		<title>Ort - CV</title>
+	</head>
+	<body>
+		<nav>
+    		<ul>
+        		<li><a href="/">Atrás</a></li>
+    		</ul>
+		</nav>
+		<div class="container">
+    		<div class="blurb">
+        		<h1>Mi CV</h1>
+				<p>Este es mi CV.</p>
+    		</div><!-- /.blurb -->
+		</div><!-- /.container -->
+		<footer>
+    		<ul>
+        		<li><a href="mailto:ort@ort.edu.ar">email</a></li>
+        		<li><a href="https://github.com/drmaquino">github.com/drmaquino</a></li>
+			</ul>
+		</footer>
+	</body>
+</html>
