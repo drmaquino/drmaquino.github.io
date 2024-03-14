@@ -1,6 +1,7 @@
+import { MODE } from '../config/environment.mjs'
+
 function write(message) {
-  //@ts-ignore
-  if (process.env.DEBUG) console.log(message)
+  if (MODE === 'DEBUG') console.log(message)
 }
 
 export const logger = {
