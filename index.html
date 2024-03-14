@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+    <script src="https://unpkg.com/vconsole@latest/dist/vconsole.min.js"></script>
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/public/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/public/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/public/favicon-16x16.png">
+    <link rel="manifest" href="/public/site.webmanifest">
+
+    <!-- Primary Meta Tags -->
+    <meta name="title" content="Cuánto pago?" />
+    <meta
+          name="description"
+          content="Aplicación para calcular los gastos en salidas compartidas" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta
+          property="og:url"
+          content="https://respected-jasper-flier.glitch.me/" />
+    <meta property="og:title" content="Administrador de gastos" />
+    <meta
+          property="og:description"
+          content="Aplicación para calcular los gastos en salidas compartidas" />
+    <meta
+          property="og:image"
+          content="https://metatags.io/images/meta-tags.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta
+          property="twitter:url"
+          content="https://respected-jasper-flier.glitch.me/" />
+    <meta property="twitter:title" content="Administrador de gastos" />
+    <meta
+          property="twitter:description"
+          content="Aplicación para calcular los gastos en salidas compartidas" />
+    <meta
+          property="twitter:image"
+          content="https://metatags.io/images/meta-tags.png" />
+
+    <!-- Meta Tags Generated with https://metatags.io -->
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+          integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9"
+          crossorigin="anonymous" />
+
+    <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+          integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer" />
+
+    <link rel="stylesheet" href="/css/style.css" />
+
+    <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script defer type="module" src="/src/index.mjs"></script>
+
+    <title>Cuánto pago?</title>
+  </head>
+
+  <body>
+    <main>
+      <div class="m-3 p-3 bg-light rounded-3">
+        <h1 class="mb-3"><u>Cuánto pago?</u></h1>
+        <!-- seccion de personas -->
+        <section class="not-hidden" id="sectionPersonas">
+          <h2>Quiénes comen?</h2>
+          <!-- visualizacion -->
+          <div id="listadoPersonas" style="display: none">
+            <table class="table table-bordered">
+              <thead class="table-secondary">
+                <tr>
+                  <th>Nombre</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyPersonas"></tbody>
+            </table>
+            <small>Toque una para eliminar o
+              <a id="linkEliminarTodasLasPersonas"><u>aquí para eliminar todas</u></a>.
+            </small>
+          </div>
+          <!-- carga -->
+          <form id="formCargarPersona" class="mb-3">
+            <h3 style="padding-top: 1em;">Cargar una nueva persona</h3>
+            <div class="d-flex gap-3">
+              <input
+                     type="text"
+                     class="form-control"
+                     placeholder="Nombre"
+                     id="inputPersona"
+                     pattern="[a-zA-Z\s]+"
+                     title="Solo letras y/o espacios" />
+              <input type="submit" value="Cargar" class="btn btn-primary" />
+            </div>
+          </form>
+        </section>
+        <!-- seccion de gastos -->
+        <section class="hidden" id="sectionGastos">
+          <h2>Qué comen?</h2>
+          <!-- visualizacion -->
+          <div id="listadoGastos" style="display: none">
+            <table class="table table-bordered">
+              <thead class="table-secondary">
+                <tr>
+                  <th><a id="listado-gastos-th-nombre">Nombre</a></th>
+                  <th><a id="listado-gastos-th-precio">Precio</a></th>
+                  <th class="col-1"><a id="listado-gastos-th-cantidad">Cantidad</a></th>
+                </tr>
+              </thead>
+              <tbody id="tbodyGastos"></tbody>
+            </table>
+            <small>Toque un nombre para eliminar o
+              <a id="linkEliminarTodosLosGastos"><u>aquí para eliminar todos</u></a>.
+            </small>
+          </div>
+          <!-- carga -->
+          <form id="formCargarGasto" class="mb-3">
+            <h3 style="padding-top: 1em;">Cargar un nuevo gasto</h3>
+            <div class="d-flex gap-3">
+              <input
+                     type="text"
+                     class="form-control"
+                     id="inputDescripcionGasto"
+                     placeholder="Descripción"
+                     pattern="[a-zA-Z0-9\s]+"
+                     title="Sólo letras, números y/o espacios" />
+              <input
+                     type="number"
+                     class="form-control"
+                     id="inputPrecioUnitarioGasto"
+                     placeholder="Monto"
+                     step="0.01"
+                     title="Sólo números a partir de 0.01" />
+              <input
+                     type="number"
+                     class="form-control"
+                     id="inputCantidadGasto"
+                     placeholder="Cantidad: 1"
+                     step="1"
+                     title="Sólo números a partir de 1" />
+              <input type="submit" value="Cargar" class="btn btn-primary" />
+            </div>
+          </form>
+        </section>
+        <!-- vista de compra -->
+        <section class="hidden" id="sectionResumen">
+          <!-- compromisos -->
+          <div id="seccionCompromisos" style="display: none">
+            <h2>Quién come qué?</h2>
+            <div class="overflow-auto">
+              <table class="table table-bordered">
+                <thead class="table-secondary">
+                  <tr id="trCabeceraCompromisos">
+                    <th>Gastos/Personas</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyCompromisos"></tbody>
+              </table>
+            </div>
+          </div>
+          <!-- deudas -->
+          <div id="seccionDeudas" style="display: none">
+            <h2>Cuánto debo?</h2>
+            <table class="table table-bordered">
+              <thead class="table-secondary">
+                <tr>
+                  <th>Nombre</th>
+                  <th>Debe</th>
+                </tr>
+              </thead>
+              <tbody id="deudas"></tbody>
+              <tfoot>
+                <tr>
+                  <th>Total</th>
+                  <th id="thTotal">$0</th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+    <nav>
+      <!-- tabs -->
+      <ul class="tabs">
+        <li id="liPersonas" class="tab active">
+          <i class="fa-solid fa-person"></i>
+          <i class="fa-solid fa-person-dress"></i>
+        </li>
+        <li id="liGastos" class="tab">
+          <i class="fa-solid fa-pizza-slice"></i>
+          <i class="fa-solid fa-wine-glass"></i>
+          <i class="fa-solid fa-ice-cream"></i>
+        </li>
+        <li id="liCompromisos" class="tab">
+          <i class="fa-solid fa-dollar-sign"></i>
+        </li>
+      </ul>
+    </nav>
+  </body>
+
+  <script>
+    var vConsole = new window.VConsole();
+  </script>
+
+</html>

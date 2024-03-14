@@ -1,0 +1,236 @@
+:root {
+  --bg-color: #7fb2ff;
+  --btn-color-base: #3c5999;
+  --btn-color-activo: #4c72c3;
+  --btn-border-color: #2c4988;
+  --font-color: #dbe6ff;
+  --nav-height: 3em;
+  --font-size-smaller: 0.6em;
+  --font-size-small: 1em;
+  --font-size-medium: 1.2em;
+  --font-size-large: 1.5em;
+  --font-size-larger: 2em;
+}
+
+* {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-color);
+}
+
+h1 {
+  font-size: var(--font-size-larger);
+}
+
+h2 {
+  font-size: var(--font-size-large);
+  margin-bottom: 0.5em;
+}
+
+h3 {
+  font-size: var(--font-size-medium);
+}
+
+th {
+  font-size: var(--font-size-small);
+}
+
+.btn-primary {
+  background-color: var(--btn-color-base);
+  border-color: var(--btn-color-base);
+}
+
+.btn-primary:hover {
+  background-color: var(--btn-color-activo);
+  border-color: var(--btn-color-activo);
+}
+
+main {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: var(--nav-height);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.hidden {
+  display: none;
+}
+
+#listadoGastos p {
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+/* para que no se wrapeen el contenido de las celdas */
+td,
+th {
+  white-space: nowrap;
+  text-align: center;
+
+}
+
+td {
+  font-size: var(--font-size-medium);
+  /* text-align: center; */
+}
+
+td:nth-child(3) {
+  text-align: center;
+}
+
+.table-personas-td {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.table-gastos-checkbox {
+  margin-right: 5px;
+}
+
+/* para que siempre se vea el gasto al scrollear */
+.table th:first-child,
+.table td:first-child {
+  position: sticky;
+  left: 0;
+}
+
+/* ------------------------------------------------------------------- */
+/* --- TOGGLE SWITCH ------------------------------------------------- */
+/* ------------------------------------------------------------------- */
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: '';
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+}
+
+input:checked+.slider {
+  background-color: var(--btn-color-base);
+}
+
+input:focus+.slider {
+  box-shadow: 0 0 1px var(--btn-color-base);
+}
+
+input:checked+.slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+.slider.round {
+  border-radius: 24px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+/* ------------------------------------------------------------------- */
+
+nav {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 1;
+}
+
+.tabs {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  pointer-events: all;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.tab {
+  flex: 1;
+  height: var(--nav-height);
+  text-align: center;
+  cursor: pointer;
+  background-color: var(--btn-color-base);
+  color: var(--font-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-large);
+}
+
+.tab:hover,
+.active {
+  background-color: var(--btn-color-activo);
+}
+
+.tab:nth-child(2) {
+  border-left: 1px solid var(--btn-border-color);
+  border-right: 1px solid var(--btn-border-color);
+}
+
+/* ------------------------------------------------------------------- */
+
+/* 
+--bg-color: #888;
+--btn-color-base: #555;
+--btn-color-activo: #666;
+--btn-border-color: #444;
+--font-color: #ddd;
+*/
+
+/*
+--btn-color-base: #007acc; 
+*/
+
+/*
+Primary: #0074e4 (Deep Blue)
+Secondary: #4caf50 (Green)
+Accent: #ff5722 (Orange)
+
+Primary: #333333 (Dark Gray)
+Secondary: #666666 (Medium Gray)
+Accent: #007acc (Blue)
+
+Primary: #ff6f61 (Red-Orange)
+Secondary: #ffcc29 (Yellow)
+Accent: #3f51b5 (Royal Blue)
+*/
