@@ -6,8 +6,8 @@ const PERSONAS_DEFAULT_ORDER = { habilitada: -1, nombre: 1 }
 const PERSONAS_VALID_ORDER_FIELDS = ['nombre', 'deuda', 'habilitada']
 
 const GASTOS_ORDER_KEY = 'gastos-order'
-const GASTOS_DEFAULT_ORDER = { estaSeleccionado: -1, nombre: 1 }
-const GASTOS_VALID_ORDER_FIELDS = ['nombre', 'precioUnitario', 'cantidad']
+const GASTOS_DEFAULT_ORDER = { habilitado: -1, nombre: 1 }
+const GASTOS_VALID_ORDER_FIELDS = ['nombre', 'precioUnitario', 'cantidad', 'habilitado']
 
 export class ConfigService {
   /** @param {ConfigRepository} configRepository  */

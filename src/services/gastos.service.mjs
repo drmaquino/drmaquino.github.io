@@ -64,11 +64,56 @@ export class GastosService {
     return seleccionados
   }
 
+  async obtenerHabilitados(options = {}) {
+    logger.trace('gastos service: obteniendo habilitados')
+
+    const gastos = await this.gastosRepository.findAll()
+    const seleccionados = gastos.filter(g => g.habilitado)
+
+    if (options.orderBy) {
+      logger.trace('ordenando gastos')
+      for (const [field, direction] of Object.entries(options.orderBy).reverse()) {
+        logger.debug('ordenando por', { [field]: direction })
+        seleccionados.sort(by(field, direction))
+        logger.debug('nuevo orden', seleccionados.map(g => g.toPOJO()))
+      }
+    }
+    return seleccionados
+  }
+
   /**
    * @param {Gasto} gasto
    */
   async guardar(gasto) {
     await this.gastosRepository.save(gasto)
+  }
+
+  /**
+ * habilita el gasto con el id dado
+ * @param {{ idGasto: string }} arg
+ * @returns el gasto actualizado
+ */
+  async habilitarPorId({ idGasto }) {
+    const gasto = await this.gastosRepository.findById(idGasto)
+    if (gasto) {
+      gasto.habilitado = true
+      await this.gastosRepository.save(gasto)
+    }
+    return gasto
+  }
+
+  /**
+   * deshabilita el gasto con el id dado
+   * @param {{ idGasto: string}} arg
+   * @returns el gasto actualizado
+   */
+  async deshabilitarPorId({ idGasto }) {
+    const persona = await this.gastosRepository.findById(idGasto)
+    if (persona) {
+      persona.habilitado = false
+      await this.gastosRepository.save(persona)
+    }
+    return persona
   }
 
   /** @param {string} idGasto */

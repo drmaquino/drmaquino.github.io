@@ -67,7 +67,6 @@ export class CompromisosRepository {
     const buscado = this.compromisos.find((c) => c.id === id)
     if (buscado) {
       buscado.porciones++
-      buscado.tomado = true
       await this.store()
     }
     return buscado
@@ -84,9 +83,6 @@ export class CompromisosRepository {
     const buscado = this.compromisos.find((c) => c.id === id)
     if (buscado) {
       buscado.porciones--
-      if (buscado.porciones === 0) {
-        buscado.tomado = false
-      }
       await this.store()
     }
     return buscado
@@ -100,7 +96,6 @@ export class CompromisosRepository {
     await this.load()
     for (const compromiso of this.compromisos) {
       compromiso.porciones = 0
-      compromiso.tomado = false
     }
     await this.store()
     return this.compromisos

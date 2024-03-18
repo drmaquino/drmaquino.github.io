@@ -90,7 +90,6 @@ export class AdministradorService {
     })
     if (deshabilitada) {
       await this.compromisosService.eliminarSegunIdPersona(deshabilitada.id)
-      await this.ajustarDeudasDePersonas()
     }
     return deshabilitada
   }
@@ -100,7 +99,6 @@ export class AdministradorService {
     const eliminada = await this.personasService.eliminarPersona({ idPersona })
     if (eliminada) {
       await this.compromisosService.eliminarSegunIdPersona(eliminada.id)
-      await this.ajustarDeudasDePersonas()
     }
     return eliminada
   }
@@ -110,44 +108,29 @@ export class AdministradorService {
     await this.compromisosService.eliminarTodos()
   }
 
-  async ajustarDeudasDePersonas() {
-    const personas = await this.personasService.obtenerTodas()
+  async calcularDeudaPersonas() {
+    const deudas = {}
+
+    const personas = await this.personasService.obtenerHabilitadas()
+    const gastos = await this.gastosService.obtenerHabilitados()
     for (const persona of personas) {
-      await this.personasService.eliminarDeuda(persona.id)
-    }
-
-    const gastos = await this.gastosService.obtenerTodos()
-    for (const gasto of gastos) {
-      /** @type {{ idPersona: string, porciones: number }[]} */
-      const porcionesPorIds = []
-
-      for (const persona of personas) {
+      let total = 0
+      for (const gasto of gastos) {
         const compromiso = await this.compromisosService.obtenerPorIds({
           idGasto: gasto.id,
-          idPersona: persona.id,
+          idPersona: persona.id
         })
         if (compromiso && compromiso.tomado) {
-          porcionesPorIds.push({
-            idPersona: persona.id,
-            porciones: compromiso.porciones,
-          })
+          const gasto = gastos.find(g => g.id === compromiso.idGasto)
+          if (gasto) {
+            total += compromiso.porciones * gasto.precioUnitario
+          }
         }
       }
-
-      const cantPorciones = porcionesPorIds.reduce(
-        (accum, curr) => accum + curr.porciones,
-        0
-      )
-      const montoPorPorcion = (gasto.precioUnitario * gasto.cantidad) / cantPorciones
-
-      for (const porcionesPorId of porcionesPorIds) {
-        const incremento = montoPorPorcion * porcionesPorId.porciones
-        await this.personasService.incrementarDeuda(
-          porcionesPorId.idPersona,
-          incremento
-        )
-      }
+      deudas[persona.nombre] = total
     }
+
+    return deudas
   }
 
   // gastos ---------------------------------------------------------
@@ -197,61 +180,91 @@ export class AdministradorService {
     }
   }
 
-  async incrementarCantidadGasto({ idGasto }) {
-    const gasto = await this.gastosService.gastosRepository.findById(idGasto)
-    if (!gasto) {
-      return false
+  async obtenerGastosHabilitados(asPOJOs = true) {
+    const gastosOrderCriteria = await this.configService.getGastosOrderCriteria()
+    const gastos = await this.gastosService.obtenerHabilitados({ orderBy: gastosOrderCriteria })
+    if (asPOJOs) {
+      return gastos.map((p) => p.toPOJO())
+    } else {
+      return gastos
     }
+  }
 
-    if (gasto.cantidad === 0) {
-      for (const persona of await this.obtenerPersonas()) {
+  /** @param {{ idGasto: string }} arg */
+  async habilitarGasto({ idGasto }) {
+    const habilitado = await this.gastosService.habilitarPorId({ idGasto })
+    if (habilitado) {
+      const personas = await this.personasService.obtenerTodas()
+      for (const persona of personas) {
         await this.compromisosService.crearCompromiso({
+          idGasto,
           idPersona: persona.id,
-          idGasto: gasto.id,
         })
       }
     }
-
-    gasto.cantidad++
-    await this.gastosService.gastosRepository.save(gasto)
-
-    await this.ajustarDeudasDePersonas()
-
-    return gasto
+    return habilitado
   }
 
-  async decrementarCantidadGasto({ idGasto }) {
-    const gasto = await this.gastosService.gastosRepository.findById(idGasto)
-    if (!gasto) {
-      return false
+  /** @param {{ idGasto: string }} arg */
+  async deshabilitarGasto({ idGasto }) {
+    const deshabilitado = await this.gastosService.deshabilitarPorId({
+      idGasto,
+    })
+    if (deshabilitado) {
+      await this.compromisosService.eliminarSegunIdGasto(deshabilitado.id)
     }
-
-    gasto.cantidad--
-    await this.gastosService.gastosRepository.save(gasto)
-
-    if (gasto.cantidad === 0) {
-      await this.compromisosService.eliminarSegunIdGasto({ idGasto: gasto.id })
-    }
-
-    await this.ajustarDeudasDePersonas()
-
-    return gasto
+    return deshabilitado
   }
 
-  /** @param {{idGasto: string, cantidad: number}} arg */
-  async modificarCantidadGasto({ idGasto, cantidad }) {
-    const gasto = await this.gastosService.gastosRepository.findById(idGasto)
-    if (!gasto) {
-      return false
-    }
+  // async incrementarCantidadGasto({ idGasto }) {
+  //   const gasto = await this.gastosService.gastosRepository.findById(idGasto)
+  //   if (!gasto) {
+  //     return false
+  //   }
 
-    gasto.cantidad = cantidad
-    await this.gastosService.gastosRepository.save(gasto)
+  //   if (gasto.cantidad === 0) {
+  //     for (const persona of await this.obtenerPersonas()) {
+  //       await this.compromisosService.crearCompromiso({
+  //         idPersona: persona.id,
+  //         idGasto: gasto.id,
+  //       })
+  //     }
+  //   }
 
-    await this.ajustarDeudasDePersonas()
+  //   gasto.cantidad++
+  //   await this.gastosService.gastosRepository.save(gasto)
 
-    return gasto
-  }
+  //   return gasto
+  // }
+
+  // async decrementarCantidadGasto({ idGasto }) {
+  //   const gasto = await this.gastosService.gastosRepository.findById(idGasto)
+  //   if (!gasto) {
+  //     return false
+  //   }
+
+  //   gasto.cantidad--
+  //   await this.gastosService.gastosRepository.save(gasto)
+
+  //   if (gasto.cantidad === 0) {
+  //     await this.compromisosService.eliminarSegunIdGasto({ idGasto: gasto.id })
+  //   }
+
+  //   return gasto
+  // }
+
+  // /** @param {{idGasto: string, cantidad: number}} arg */
+  // async modificarCantidadGasto({ idGasto, cantidad }) {
+  //   const gasto = await this.gastosService.gastosRepository.findById(idGasto)
+  //   if (!gasto) {
+  //     return false
+  //   }
+
+  //   gasto.cantidad = cantidad
+  //   await this.gastosService.gastosRepository.save(gasto)
+
+  //   return gasto
+  // }
 
   /** @param {{idGasto: string, precioUnitario: number}} arg */
   async modificarPrecioUnitarioGasto({ idGasto, precioUnitario }) {
@@ -263,8 +276,6 @@ export class AdministradorService {
     gasto.precioUnitario = precioUnitario
     await this.gastosService.gastosRepository.save(gasto)
 
-    await this.ajustarDeudasDePersonas()
-
     return gasto
   }
 
@@ -274,9 +285,6 @@ export class AdministradorService {
     if (gastoEliminado) {
       const compromisosEliminados =
         await this.compromisosService.eliminarSegunIdGasto(gastoEliminado.id)
-      if (compromisosEliminados.length > 0) {
-        await this.ajustarDeudasDePersonas()
-      }
     }
     return gastoEliminado
   }
@@ -284,7 +292,6 @@ export class AdministradorService {
   async eliminarTodosLosGastos() {
     await this.gastosService.eliminarTodos()
     await this.compromisosService.eliminarTodos()
-    await this.ajustarDeudasDePersonas()
   }
 
   async establecerNuevoOrdenGastos(campo) {
@@ -308,18 +315,14 @@ export class AdministradorService {
   }
 
   async eliminarCompromisosSegunIdPersona(idPersona) {
-    const eliminados = await this.compromisosService.eliminarSegunIdPersona(
-      idPersona
-    )
-    await this.ajustarDeudasDePersonas()
+    const eliminados = await this.compromisosService
+      .eliminarSegunIdPersona(idPersona)
     return eliminados
   }
 
   async eliminarCompromisosSegunIdGasto(idGasto) {
-    const eliminados = await this.compromisosService.eliminarSegunIdGasto(
-      idGasto
-    )
-    await this.ajustarDeudasDePersonas()
+    const eliminados = await this.compromisosService
+      .eliminarSegunIdGasto(idGasto)
     return eliminados
   }
 
@@ -331,9 +334,7 @@ export class AdministradorService {
     })
     if (compromiso) {
       compromiso.porciones++
-      compromiso.tomado = true
       await this.compromisosService.guardar(compromiso)
-      await this.ajustarDeudasDePersonas()
     }
     return compromiso
   }
@@ -344,20 +345,15 @@ export class AdministradorService {
       idPersona,
       idGasto,
     })
-    if (compromiso && compromiso.porciones > 0) {
+    if (compromiso && compromiso.tomado) {
       compromiso.porciones--
-      if (compromiso.porciones === 0) {
-        compromiso.tomado = false
-      }
       await this.compromisosService.guardar(compromiso)
-      await this.ajustarDeudasDePersonas()
     }
     return compromiso
   }
 
   async desmarcarTodosLosCompromisos() {
     await this.compromisosService.desmarcarTodos()
-    await this.ajustarDeudasDePersonas()
   }
 
   async hayCompromisosTomados() {
@@ -373,11 +369,20 @@ export class AdministradorService {
   }
 
   async obtenerTotal() {
+    const gastos = await this.gastosService.obtenerHabilitados()
     const compromisos = await this.compromisosService.obtenerTodos()
-    const gastos = await this.gastosService.obtenerTodos()
-    return gastos
-      .filter((g) => compromisos.some((c) => c.tomado && c.idGasto === g.id))
-      .reduce((total, g) => total + g.precioUnitario * g.cantidad, 0)
+
+    let total = 0
+    for (const gasto of gastos) {
+      let cant = 0
+      for (const compromiso of compromisos) {
+        if (compromiso.idGasto === gasto.id) {
+          cant += compromiso.porciones
+        }
+      }
+      total += gasto.precioUnitario * cant
+    }
+    return total
   }
 
   /**

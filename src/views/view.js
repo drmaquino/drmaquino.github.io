@@ -20,10 +20,6 @@ const listadoGastos = typedQuerySelector('#listadoGastos', HTMLDivElement)
 const tbodyGastos = typedQuerySelector('#tbodyGastos', HTMLTableSectionElement)
 const linkEliminarTodosLosGastos = typedQuerySelector('#linkEliminarTodosLosGastos', HTMLAnchorElement)
 
-const linkOrdenarPorNombre = typedQuerySelector('#listado-gastos-th-nombre', HTMLAnchorElement)
-const linkOrdenarPorPrecio = typedQuerySelector('#listado-gastos-th-precio', HTMLAnchorElement)
-const linkOrdenarPorCantidad = typedQuerySelector('#listado-gastos-th-cantidad', HTMLAnchorElement)
-
 // seccion compromisos
 const sectionResumen = typedQuerySelector('#sectionResumen', HTMLElement)
 
@@ -51,22 +47,6 @@ export class View {
 
     linkEliminarTodosLosGastos.onclick = () =>
       this.preguntarSiBorrarATodosLosGastos()
-
-    linkOrdenarPorNombre.onclick = async () => {
-      // await this.model.establecerNuevoOrdenGastos('nombre')
-      // await this.actualizarListaGastos()
-    }
-
-    linkOrdenarPorPrecio.onclick = async () => {
-      // await this.model.establecerNuevoOrdenGastos('monto')
-      // await this.actualizarListaGastos()
-    }
-
-    linkOrdenarPorCantidad.onclick = async () => {
-      // await this.model.establecerNuevoOrdenGastos('cantidad')
-      // await this.actualizarListaGastos()
-    }
-
 
     formCargarPersona.addEventListener('submit', async (event) => {
       event.preventDefault()
@@ -272,51 +252,31 @@ export class View {
       }
       tdPrecio.appendChild(aNodePrecio)
 
-      // col cantidad ------
+      // col habilitado ------
 
-      const tdCantidad = document.createElement('td')
-      trGasto.appendChild(tdCantidad)
+      const tdHabilitado = document.createElement('td')
+      trGasto.appendChild(tdHabilitado)
 
-      if (gasto.cantidad === 0) {
-        const checkbox = document.createElement('input')
-        checkbox.type = 'checkbox'
-        checkbox.checked = false
-        checkbox.onclick = async (event) => {
-          if (checkbox.checked) {
-            await this.model.incrementarCantidadGasto({ idGasto: gasto.id })
-            await this.actualizarListaGastos()
-          }
-        }
-        tdCantidad.appendChild(checkbox)
-      } else {
-        const btnDecr = document.createElement('button')
-        btnDecr.className = 'btn btn-primary btn-sm mx-1 p-0 px-1'
-        btnDecr.innerHTML = '-'
-        btnDecr.onclick = async (event) => {
-          await this.model.decrementarCantidadGasto({ idGasto: gasto.id })
-          await this.actualizarListaGastos()
-        }
-        tdCantidad.appendChild(btnDecr)
+      const toggleSwitch = document.createElement('label')
+      toggleSwitch.className = 'switch'
+      tdHabilitado.appendChild(toggleSwitch)
 
-        const aNodeCantidad = document.createElement('a')
-        aNodeCantidad.innerHTML = `${gasto.cantidad}`
-        aNodeCantidad.onclick = () => {
-          this.preguntarSiEditarCantidadGasto({
-            idGasto: gasto.id,
-            nombreGasto: gasto.nombre,
-          })
+      const sliderBox = document.createElement('input')
+      sliderBox.type = 'checkbox'
+      sliderBox.checked = gasto.habilitado
+      sliderBox.addEventListener('click', async (event) => {
+        if (sliderBox.checked) {
+          await this.model.habilitarGasto({ idGasto: gasto.id })
+        } else {
+          await this.model.deshabilitarGasto({ idGasto: gasto.id })
         }
-        tdCantidad.appendChild(aNodeCantidad)
+        await this.actualizarListaGastos()
+      })
+      toggleSwitch.appendChild(sliderBox)
 
-        const btnIncr = document.createElement('button')
-        btnIncr.className = 'btn btn-primary btn-sm mx-1 p-0 px-1'
-        btnIncr.innerHTML = '+'
-        btnIncr.onclick = async (event) => {
-          await this.model.incrementarCantidadGasto({ idGasto: gasto.id })
-          await this.actualizarListaGastos()
-        }
-        tdCantidad.appendChild(btnIncr)
-      }
+      const sliderBall = document.createElement('span')
+      sliderBall.classList.add('slider', 'round')
+      toggleSwitch.appendChild(sliderBall)
     }
     this.mostrarListadoGastos()
   }
@@ -343,9 +303,9 @@ export class View {
   async actualizarTablaCompromisos() {
     logger.trace('actualizando tabla compromisos')
 
-    const gastosSeleccionados = await this.model.obtenerGastosSeleccionados()
+    const gastos = await this.model.obtenerGastosHabilitados()
 
-    if (gastosSeleccionados.length === 0) {
+    if (gastos.length === 0) {
       this.ocultarSeccionCompromisos()
       return true
     }
@@ -379,15 +339,16 @@ export class View {
 
       aNode.innerHTML = persona.nombre
       aNode.onclick = () =>
-        this.preguntarSiBorrarPersona({
+        this.preguntarSiDeshabilitarPersona({
           nombrePersona: persona.nombre,
           idPersona: persona.id,
         })
     }
 
-    // crear filas
+    // crear filas con gastos y compromisos
     tbodyCompromisos.replaceChildren()
-    for (const gasto of gastosSeleccionados) {
+
+    for (const gasto of gastos) {
       const trGastos = document.createElement('tr')
       tbodyCompromisos.appendChild(trGastos)
 
@@ -397,9 +358,9 @@ export class View {
       const aNode = document.createElement('a')
       tdNombreGasto.appendChild(aNode)
 
-      aNode.innerHTML = `${gasto.nombre} ($${gasto.total})`
+      aNode.innerHTML = gasto.nombre
       aNode.onclick = () =>
-        this.preguntarSiBorrarGasto({
+        this.preguntarSiDeshabilitarGasto({
           nombreGasto: gasto.nombre,
           idGasto: gasto.id,
         })
@@ -419,70 +380,42 @@ export class View {
 
         trGastos.appendChild(tdCompromiso)
 
-        const checkbox = document.createElement('input')
-        checkbox.type = 'checkbox'
-        checkbox.checked = compromiso.tomado
-
-        checkbox.onclick = async (event) => {
-          if (checkbox.checked) {
-            await this.model.incrementarCompromiso({
-              idPersona: persona.id,
-              idGasto: gasto.id,
-            })
-          } else {
-            await this.model.decrementarCompromiso({
-              idPersona: persona.id,
-              idGasto: gasto.id,
-            })
+        if (compromiso.porciones === 0) {
+          const checkbox = document.createElement('input')
+          checkbox.type = 'checkbox'
+          checkbox.checked = false
+          checkbox.onclick = async (event) => {
+            if (checkbox.checked) {
+              await this.model.incrementarCompromiso({ idPersona: persona.id, idGasto: gasto.id })
+              await this.actualizarTablaCompromisos()
+              await this.actualizarTablaDeudas()
+            }
           }
-
-          await this.actualizarTablaCompromisos()
-          await this.actualizarTablaDeudas()
-        }
-        tdCompromiso.appendChild(checkbox)
-
-        const btnDecr = document.createElement('button')
-        btnDecr.className = 'btn btn-primary btn-sm mx-1 p-0 px-1'
-        btnDecr.innerHTML = '-'
-        btnDecr.onclick = async (event) => {
-          await this.model.decrementarCompromiso({
-            idPersona: persona.id,
-            idGasto: gasto.id,
-          })
-
-          await this.actualizarTablaCompromisos()
-          await this.actualizarTablaDeudas()
-        }
-        tdCompromiso.appendChild(btnDecr)
-
-        const spanPorciones = document.createElement('span')
-        spanPorciones.innerHTML = `${compromiso.porciones}`
-        tdCompromiso.appendChild(spanPorciones)
-
-        const btnIncr = document.createElement('button')
-        btnIncr.className = 'btn btn-primary btn-sm mx-1 p-0 px-1'
-        btnIncr.innerHTML = '+'
-        btnIncr.onclick = async (event) => {
-          await this.model.incrementarCompromiso({
-            idPersona: persona.id,
-            idGasto: gasto.id,
-          })
-
-          await this.actualizarTablaCompromisos()
-          await this.actualizarTablaDeudas()
-        }
-        tdCompromiso.appendChild(btnIncr)
-
-        if (compromiso.tomado) {
-          checkbox.style.setProperty('display', 'none')
-          btnDecr.style.setProperty('display', 'inline-block')
-          spanPorciones.style.setProperty('display', 'inline-block')
-          btnIncr.style.setProperty('display', 'inline-block')
+          tdCompromiso.appendChild(checkbox)
         } else {
-          checkbox.style.setProperty('display', 'inline-block')
-          btnDecr.style.setProperty('display', 'none')
-          spanPorciones.style.setProperty('display', 'none')
-          btnIncr.style.setProperty('display', 'none')
+          const btnDecr = document.createElement('button')
+          btnDecr.className = 'btn btn-primary btn-sm mx-1 p-0 px-1'
+          btnDecr.innerHTML = '-'
+          btnDecr.onclick = async (event) => {
+            await this.model.decrementarCompromiso({ idGasto: gasto.id, idPersona: persona.id })
+            await this.actualizarTablaCompromisos()
+            await this.actualizarTablaDeudas()
+          }
+          tdCompromiso.appendChild(btnDecr)
+
+          const aNodePorciones = document.createElement('a')
+          aNodePorciones.innerHTML = `${compromiso.porciones}`
+          tdCompromiso.appendChild(aNodePorciones)
+
+          const btnIncr = document.createElement('button')
+          btnIncr.className = 'btn btn-primary btn-sm mx-1 p-0 px-1'
+          btnIncr.innerHTML = '+'
+          btnIncr.onclick = async (event) => {
+            await this.model.incrementarCompromiso({ idGasto: gasto.id, idPersona: persona.id })
+            await this.actualizarTablaCompromisos()
+            await this.actualizarTablaDeudas()
+          }
+          tdCompromiso.appendChild(btnIncr)
         }
       }
     }
@@ -509,11 +442,12 @@ export class View {
       return true
     }
 
-    const personas = await this.model.obtenerPersonasHabilitadas()
+    const deudas = await this.model.calcularDeudaPersonas()
 
     tbodyDeudas.replaceChildren()
-    for (const persona of personas) {
-      if (persona.deuda > 0) {
+
+    for (const nombre in deudas) {
+      if (deudas[nombre] > 0) {
         const tr = document.createElement('tr')
         tbodyDeudas.appendChild(tr)
 
@@ -521,30 +455,12 @@ export class View {
         tr.appendChild(tdNombre)
 
         const aNode = document.createElement('a')
+        aNode.innerHTML = nombre
         tdNombre.appendChild(aNode)
 
-        aNode.innerHTML = persona.nombre
-        aNode.onclick = () => {
-          // TODO: mostrar detalle de la deuda (qué gastos la causan?)
-          this.preguntarSiBorrarPersona({
-            nombrePersona: persona.nombre,
-            idPersona: persona.id,
-          })
-        }
-
         const tdDeuda = document.createElement('td')
-        tdDeuda.id = `tdDeuda-${persona.id}`
+        tdDeuda.replaceChildren(`$${deudas[nombre].toFixed(2)}`)
         tr.appendChild(tdDeuda)
-      }
-    }
-
-    for (const persona of personas) {
-      if (persona.deuda > 0) {
-        const tdDeuda = typedQuerySelector(
-          `#tdDeuda-${persona.id}`,
-          HTMLTableCellElement
-        )
-        tdDeuda.replaceChildren(`$${persona.deuda.toFixed(2)}`)
       }
     }
 
@@ -596,6 +512,24 @@ export class View {
     }
   }
 
+  async preguntarSiDeshabilitarPersona({ nombrePersona, idPersona }) {
+    // @ts-ignore
+    const result = await Swal.fire({
+      title: `Deshabilitar a ${nombrePersona}?`,
+      showCancelButton: true,
+      confirmButtonText: 'Deshabilitar',
+      cancelButtonText: `Cancelar`,
+      confirmButtonColor: BTN_CONFIRM_COLOR,
+    })
+    if (result.isConfirmed) {
+      await this.model.deshabilitarPersona({ idPersona })
+
+      await this.actualizarListaPersonas()
+      await this.actualizarTablaCompromisos()
+      await this.actualizarTablaDeudas()
+    }
+  }
+
   async preguntarSiBorrarATodasLasPersonas() {
     // @ts-ignore
     const result = await Swal.fire({
@@ -638,34 +572,6 @@ export class View {
     }
   }
 
-  async preguntarSiEditarCantidadGasto({ nombreGasto, idGasto }) {
-    // @ts-ignore
-    const result = await Swal.fire({
-      title: nombreGasto,
-      input: 'number',
-      inputLabel: 'Ingrese la nueva cantidad',
-      showCancelButton: true,
-      confirmButtonText: 'Modificar',
-      cancelButtonText: `Cancelar`,
-      inputValidator: (value) => {
-        if (!value || isNaN(Number(value)) || Number(value) < 0) {
-          return 'La cantidad debe ser un número mayor o igual a 0'
-        }
-      },
-      confirmButtonColor: BTN_CONFIRM_COLOR,
-      // heightAuto: false
-    })
-
-    if (result.isConfirmed) {
-      const cantidad = parseInt(result.value)
-      await this.model.modificarCantidadGasto({
-        idGasto,
-        cantidad
-      })
-      await this.actualizarListaGastos()
-    }
-  }
-
   async preguntarSiBorrarGasto({ nombreGasto, idGasto }) {
     // @ts-ignore
     const result = await Swal.fire({
@@ -684,6 +590,23 @@ export class View {
     }
   }
 
+  async preguntarSiDeshabilitarGasto({ nombreGasto, idGasto }) {
+    // @ts-ignore
+    const result = await Swal.fire({
+      title: `Deshabilitar ${nombreGasto}?`,
+      showCancelButton: true,
+      confirmButtonText: 'Deshabilitar',
+      cancelButtonText: `Cancelar`,
+      confirmButtonColor: BTN_CONFIRM_COLOR,
+    })
+
+    if (result.isConfirmed) {
+      await this.model.eliminarGasto({ idGasto })
+
+      await this.actualizarListaGastos()
+    }
+  }
+
   async preguntarSiBorrarATodosLosGastos() {
     // @ts-ignore
     const result = await Swal.fire({
@@ -692,7 +615,6 @@ export class View {
       confirmButtonText: 'Eliminar',
       cancelButtonText: `Cancelar`,
       confirmButtonColor: BTN_CONFIRM_COLOR,
-      // heightAuto: false
     })
     if (result.isConfirmed) {
       await this.model.eliminarTodosLosGastos()
