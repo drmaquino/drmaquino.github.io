@@ -102,6 +102,31 @@ export class CompromisosRepository {
   }
 
   /**
+ * elimina todos los compromisos según el criterio dado
+ * @param {{
+ *  idPersona?: string
+ *  idGasto?: string
+ * }} criteria
+ * @returns los compromisos eliminados
+ * */
+  async deleteOneByCriteria(criteria) {
+    await this.load()
+    const eliminados = []
+    for (let ic = this.compromisos.length - 1; ic >= 0; ic--) {
+      let matches = true
+      for (const clave in criteria) {
+        matches &&= this.compromisos[ic][clave] === criteria[clave]
+      }
+      if (matches) {
+        eliminados.unshift(...this.compromisos.splice(ic, 1))
+        break
+      }
+    }
+    await this.store()
+    return eliminados[0]
+  }
+
+  /**
    * elimina todos los compromisos sobre la persona dada
    * @param {string} idPersona
    * @returns los compromisos eliminados

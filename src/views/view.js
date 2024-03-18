@@ -305,8 +305,6 @@ export class View {
       return true
     }
 
-    const compromisos = await this.model.obtenerCompromisos()
-
     trCabeceraCompromisos.replaceChildren()
 
     // crear vertice de tabla
@@ -355,26 +353,21 @@ export class View {
 
       // crear checkboxes y botones de ajuste de porciones
       for (const persona of personas) {
-        const compromiso = compromisos.find(
-          (c) => c.idPersona === persona.id && c.idGasto === gasto.id
-        )
-        if (!compromiso) {
-          alert(`missing compromiso for ${persona.nombre} and ${gasto.nombre}`)
-          continue
-        }
-
         const tdCompromiso = document.createElement('td')
-        tdCompromiso.id = compromiso.id
-
         trGastos.appendChild(tdCompromiso)
 
-        if (compromiso.porciones === 0) {
+        const compromiso = await this.model.obtenerCompromiso({
+          idPersona: persona.id,
+          idGasto: gasto.id
+        })
+
+        if (!compromiso || compromiso.porciones === 0) {
           const checkbox = document.createElement('input')
           checkbox.type = 'checkbox'
           checkbox.checked = false
           checkbox.onclick = async (event) => {
             if (checkbox.checked) {
-              await this.model.incrementarCompromiso({ idPersona: persona.id, idGasto: gasto.id })
+              await this.model.crearCompromiso({ idPersona: persona.id, idGasto: gasto.id })
               await this.actualizarTablaCompromisos()
               await this.actualizarTablaDeudas()
             }
@@ -589,10 +582,11 @@ export class View {
     })
 
     if (result.isConfirmed) {
-      await this.model.eliminarGasto({ idGasto })
-
-      await this.actualizarListaGastos()
+      await this.model.deshabilitarGasto({ idGasto })
+      await this.actualizarTablaCompromisos()
     }
+
+    return result.isConfirmed
   }
 
   async preguntarSiBorrarATodosLosGastos() {

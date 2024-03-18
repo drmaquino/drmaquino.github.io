@@ -9,7 +9,7 @@ export class CompromisosService {
 
   /** @param {{ idPersona: string, idGasto: string }} arg */
   async crearCompromiso({ idPersona, idGasto }) {
-    const compromiso = new Compromiso({ idGasto, idPersona })
+    const compromiso = new Compromiso({ idGasto, idPersona, porciones: 1 })
     await this.compromisosRepository.save(compromiso)
     return compromiso
   }
@@ -39,6 +39,10 @@ export class CompromisosService {
   /** @param {Compromiso} compromiso */
   async guardar(compromiso) {
     await this.compromisosRepository.save(compromiso)
+  }
+
+  async eliminarCompromiso(criteria) {
+    return await this.compromisosRepository.deleteOneByCriteria(criteria)
   }
 
   async eliminarSegunIdPersona(idPersona) {
