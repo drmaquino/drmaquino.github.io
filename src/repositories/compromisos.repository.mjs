@@ -149,7 +149,6 @@ export class CompromisosRepository {
    * */
   async store() {
     await this.storage.write(this.compromisos.map((c) => c.toPOJO()))
-    return true //TODO: revisar si quitar!
   }
 
   /**
@@ -160,6 +159,5 @@ export class CompromisosRepository {
     this.compromisos.length = 0
     const pojos = await this.storage.read()
     pojos.forEach((pojo) => this.compromisos.push(new Compromiso(pojo)))
-    return true //TODO: revisar si quitar!
   }
 }

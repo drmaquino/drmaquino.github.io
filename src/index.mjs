@@ -45,16 +45,3 @@ const adminService = new AdministradorService(
 const view = new View(adminService)
 
 await view.refresh()
-
-
-// TODO: for debugging purposes
-
-// await configService.setPersonasOrderByField('deuda')
-
-// const link = typedQuerySelector('#liPersonas', HTMLLIElement)
-// const link = typedQuerySelector('#liGastos', HTMLLIElement)
-// const link = typedQuerySelector('#liCompromisos', HTMLLIElement)
-// link.dispatchEvent(new Event('click'))
-
-// view.ocultarSecciones()
-// view.mostrarSeccionGastos()

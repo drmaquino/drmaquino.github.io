@@ -139,14 +139,12 @@ export class AdministradorService {
    * @param {{
    *   nombre: string,
    *   precioUnitario: number,
-   *   cantidad?: number,
    * }} arg
    * */
-  async agregarGasto({ nombre, precioUnitario, cantidad = 1 }) {
+  async agregarGasto({ nombre, precioUnitario }) {
     const gasto = await this.gastosService.agregarNuevo({
       nombre,
       precioUnitario,
-      cantidad,
     })
 
     const personas = await this.personasService.obtenerTodas()
@@ -163,16 +161,6 @@ export class AdministradorService {
   async obtenerGastos(asPOJOs = true) {
     const gastosOrderCriteria = await this.configService.getGastosOrderCriteria()
     const gastos = await this.gastosService.obtenerTodos({ orderBy: gastosOrderCriteria })
-    if (asPOJOs) {
-      return gastos.map((p) => p.toPOJO())
-    } else {
-      return gastos
-    }
-  }
-
-  async obtenerGastosSeleccionados(asPOJOs = true) {
-    const gastosOrderCriteria = await this.configService.getGastosOrderCriteria()
-    const gastos = await this.gastosService.obtenerSeleccionados({ orderBy: gastosOrderCriteria })
     if (asPOJOs) {
       return gastos.map((p) => p.toPOJO())
     } else {
@@ -383,25 +371,5 @@ export class AdministradorService {
       total += gasto.precioUnitario * cant
     }
     return total
-  }
-
-  /**
-   * // TODO: no se usa!
-   */
-  async asignarATodasLasPersonasElGastoConId(idGasto) {
-    const personas = await this.personasService.obtenerTodas()
-    for (const idPersona of personas.map((p) => p.id)) {
-      await this.incrementarCompromiso({ idPersona, idGasto })
-    }
-  }
-
-  /**
-   * // TODO: no se usa!
-   */
-  async asignarATodosLosGastosLaPersonaConId(idPersona) {
-    const gastos = await this.gastosService.obtenerTodos()
-    for (const idGasto of gastos.map((g) => g.id)) {
-      await this.incrementarCompromiso({ idPersona, idGasto })
-    }
   }
 }

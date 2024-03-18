@@ -15,7 +15,6 @@ const sectionGastos = typedQuerySelector('#sectionGastos', HTMLElement)
 const formCargarGasto = typedQuerySelector('#formCargarGasto', HTMLFormElement)
 const inputDescripcionGasto = typedQuerySelector('#inputDescripcionGasto', HTMLInputElement)
 const inputPrecioUnitarioGasto = typedQuerySelector('#inputPrecioUnitarioGasto', HTMLInputElement)
-const inputCantidadGasto = typedQuerySelector('#inputCantidadGasto', HTMLInputElement)
 const listadoGastos = typedQuerySelector('#listadoGastos', HTMLDivElement)
 const tbodyGastos = typedQuerySelector('#tbodyGastos', HTMLTableSectionElement)
 const linkEliminarTodosLosGastos = typedQuerySelector('#linkEliminarTodosLosGastos', HTMLAnchorElement)
@@ -88,19 +87,8 @@ export class View {
         return false
       }
 
-      let cantidad = parseInt(inputCantidadGasto.value)
-      if (isNaN(cantidad)) {
-        cantidad = 1
-      }
-
-      if (cantidad < 1) {
-        this.mostrarWarningToast('la cantidad debe ser un entero mayor a 0')
-        inputCantidadGasto.value = '1'
-        return false
-      }
-
       try {
-        await this.model.agregarGasto({ nombre, precioUnitario, cantidad })
+        await this.model.agregarGasto({ nombre, precioUnitario })
 
         this.limpiarFormularioGastos()
         await this.actualizarListaGastos()

@@ -11,17 +11,16 @@ export class GastosService {
 
   /**
    * @param {{
-   *   cantidad: number,
    *   nombre: string,
    *   precioUnitario: number
    * }} arg
    * */
-  async agregarNuevo({ nombre, precioUnitario, cantidad }) {
+  async agregarNuevo({ nombre, precioUnitario }) {
     if (await this.gastosRepository.findByNombre(nombre)) {
       throw new Error('ya existe un gasto con ese nombre')
     }
 
-    const gasto = new Gasto({ nombre, precioUnitario, cantidad })
+    const gasto = new Gasto({ nombre, precioUnitario })
     await this.gastosRepository.save(gasto)
 
     return gasto
@@ -45,23 +44,6 @@ export class GastosService {
       }
     }
     return gastos
-  }
-
-  async obtenerSeleccionados(options = {}) {
-    logger.trace('gastos service: obteniendo seleccionados')
-
-    const gastos = await this.gastosRepository.findAll()
-    const seleccionados = gastos.filter(g => g.estaSeleccionado)
-
-    if (options.orderBy) {
-      logger.trace('ordenando gastos')
-      for (const [field, direction] of Object.entries(options.orderBy).reverse()) {
-        logger.debug('ordenando por', { [field]: direction })
-        seleccionados.sort(by(field, direction))
-        logger.debug('nuevo orden', seleccionados.map(g => g.toPOJO()))
-      }
-    }
-    return seleccionados
   }
 
   async obtenerHabilitados(options = {}) {

@@ -62,37 +62,6 @@ export class PersonasRepository {
   }
 
   /**
-   * incrementa la deuda de la persona con el id dado
-   * @param {string} id
-   * @param {number} incremento
-   * @returns la persona actualizada
-   */
-  async incrementarDeuda(id, incremento) {
-    await this.load()
-    const persona = this.personas.find((p) => p.id === id)
-    if (persona) {
-      persona.deuda += incremento
-      await this.store()
-    }
-    return persona
-  }
-
-  /**
-   * pone en cero la deuda de la persona con el id dado
-   * @param {string} id
-   * @returns la persona actualizada
-   */
-  async reiniciarDeuda(id) {
-    await this.load()
-    const persona = this.personas.find((p) => p.id === id)
-    if (persona) {
-      persona.deuda = 0
-      await this.store()
-    }
-    return persona
-  }
-
-  /**
    * elimina la persona con el id dado
    * @param {string} id
    * @return la persona eliminada
@@ -122,7 +91,6 @@ export class PersonasRepository {
    */
   async store() {
     await this.storage.write(this.personas.map((p) => p.toPOJO()))
-    return true //TODO: revisar si quitar!
   }
 
   /**

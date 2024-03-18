@@ -91,7 +91,6 @@ export class GastosRepository {
    * */
   async store() {
     await this.storage.write(this.gastos.map((g) => g.toPOJO()))
-    return true //TODO: revisar si quitar!
   }
 
   /**
