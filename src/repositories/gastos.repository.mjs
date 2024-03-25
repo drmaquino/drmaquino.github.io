@@ -1,5 +1,5 @@
-import { Gasto } from '../entities/Gasto.mjs'
-import { Storage } from '../storage/storage.mjs'
+import { Gasto } from '../classes/Gasto.mjs'
+import { Storage } from '../storages/storage.mjs'
 import { logger } from '../utils/logger.mjs'
 
 export class GastosRepository {
@@ -17,7 +17,7 @@ export class GastosRepository {
    * @returns el gasto buscado
    */
   async findById(id) {
-    await this.load()
+    await this.#load()
     return this.gastos.find((g) => g.id === id)
   }
 
@@ -27,7 +27,7 @@ export class GastosRepository {
    * @returns el gasto buscado
    */
   async findByNombre(nombre) {
-    await this.load()
+    await this.#load()
     return this.gastos.find(
       (g) => g.nombre.toLowerCase() === nombre.toLowerCase()
     )
@@ -40,7 +40,7 @@ export class GastosRepository {
   async findAll() {
     logger.trace('gastos repository: obteniendo todos')
 
-    await this.load()
+    await this.#load()
     return this.gastos
   }
 
@@ -50,14 +50,14 @@ export class GastosRepository {
    * @returns el gasto guardado
    */
   async save(gasto) {
-    await this.load()
+    await this.#load()
     const index = this.gastos.findIndex((g) => g.id === gasto.id)
     if (index === -1) {
       this.gastos.push(gasto)
     } else {
       this.gastos[index] = gasto
     }
-    await this.store()
+    await this.#store()
     return gasto
   }
 
@@ -67,12 +67,12 @@ export class GastosRepository {
    * @returns el gasto actualizado
    */
   async deleteById(id) {
-    await this.load()
+    await this.#load()
     const index = this.gastos.findIndex((p) => p.id === id)
     let eliminado = null
     if (index !== -1) {
-      ;[eliminado] = this.gastos.splice(index, 1)
-      await this.store()
+      [eliminado] = this.gastos.splice(index, 1)
+      await this.#store()
     }
     return eliminado
   }
@@ -82,24 +82,22 @@ export class GastosRepository {
    */
   async deleteAll() {
     this.gastos.length = 0
-    await this.store()
+    await this.#store()
   }
 
   /**
    * almacena todos los gastos en el storage correspondiente
-   * @returns si se pudo almacenar
-   * */
-  async store() {
+   */
+  async #store() {
     await this.storage.write(this.gastos.map((g) => g.toPOJO()))
   }
 
   /**
    * carga desde el storage correspondiente todos los gastos en memoria
-   * @returns si se pudo cargar
-   * */
-  async load() {
+   */
+  async #load() {
     this.gastos.length = 0
     const pojos = await this.storage.read()
-    pojos.forEach((pojo) => this.gastos.push(new Gasto(pojo)))
+    pojos.forEach(pojo => this.gastos.push(Gasto.fromPOJO(pojo)))
   }
 }

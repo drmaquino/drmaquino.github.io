@@ -1,6 +1,5 @@
-import { AdministradorService } from '../services/administrador.service.mjs'
 import { typedQuerySelector } from '../utils/dom.mjs'
-import { logger } from '../utils/logger.mjs'
+import { Sistema } from '../classes/Sistema.mjs'
 
 // seccion personas
 const sectionPersonas = typedQuerySelector('#sectionPersonas', HTMLElement)
@@ -19,12 +18,12 @@ const listadoGastos = typedQuerySelector('#listadoGastos', HTMLDivElement)
 const tbodyGastos = typedQuerySelector('#tbodyGastos', HTMLTableSectionElement)
 const linkEliminarTodosLosGastos = typedQuerySelector('#linkEliminarTodosLosGastos', HTMLAnchorElement)
 
-// seccion compromisos
+// seccion consumiciones
 const sectionResumen = typedQuerySelector('#sectionResumen', HTMLElement)
 
-const seccionCompromisos = typedQuerySelector('#seccionCompromisos', HTMLDivElement)
-const trCabeceraCompromisos = typedQuerySelector('#trCabeceraCompromisos', HTMLTableRowElement)
-const tbodyCompromisos = typedQuerySelector('#tbodyCompromisos', HTMLTableSectionElement)
+const seccionConsumiciones = typedQuerySelector('#seccionConsumiciones', HTMLDivElement)
+const trCabeceraConsumiciones = typedQuerySelector('#trCabeceraConsumiciones', HTMLTableRowElement)
+const tbodyConsumiciones = typedQuerySelector('#tbodyConsumiciones', HTMLTableSectionElement)
 
 const seccionDeudas = typedQuerySelector('#seccionDeudas', HTMLDivElement)
 const tbodyDeudas = typedQuerySelector('#deudas', HTMLTableSectionElement)
@@ -32,12 +31,12 @@ const tbodyDeudas = typedQuerySelector('#deudas', HTMLTableSectionElement)
 // navbar
 const liPersonas = typedQuerySelector('#liPersonas', HTMLLIElement)
 const liGastos = typedQuerySelector('#liGastos', HTMLLIElement)
-const liCompromisos = typedQuerySelector('#liCompromisos', HTMLLIElement)
+const liConsumiciones = typedQuerySelector('#liConsumiciones', HTMLLIElement)
 
 const BTN_CONFIRM_COLOR = '#3c5999'
 
 export class View {
-  /** @param {AdministradorService} model */
+  /** @param {Sistema} model */
   constructor(model) {
     this.model = model
 
@@ -57,7 +56,7 @@ export class View {
       }
 
       try {
-        await this.model.agregarPersona({ nombre })
+        await this.model.agendarPersona({ nombre })
 
         this.limpiarFormularioPersonas()
         await this.actualizarListaPersonas()
@@ -81,14 +80,14 @@ export class View {
       }
 
       const precioUnitario = parseFloat(inputPrecioUnitarioGasto.value)
-      if (!precioUnitario || precioUnitario < 0.01) {
-        this.mostrarWarningToast('el monto del gasto debe ser mayor a 0.01')
-        inputPrecioUnitarioGasto.value = '0.01'
+      if (!precioUnitario || precioUnitario < 1) {
+        this.mostrarWarningToast('el monto del gasto debe ser mayor a 1')
+        inputPrecioUnitarioGasto.value = '1'
         return false
       }
 
       try {
-        await this.model.agregarGasto({ nombre, precioUnitario })
+        await this.model.agendarGasto({ nombre, precio: precioUnitario })
 
         this.limpiarFormularioGastos()
         await this.actualizarListaGastos()
@@ -114,18 +113,17 @@ export class View {
       this.mostrarSeccionGastos()
     })
 
-    liCompromisos.addEventListener('click', async () => {
+    liConsumiciones.addEventListener('click', async () => {
       this.ocultarSecciones()
-      await this.actualizarTablaCompromisos()
+      await this.actualizarTablaConsumiciones()
       await this.actualizarTablaDeudas()
       this.mostrarSeccionResumen()
     })
   }
 
   async actualizarListaPersonas() {
-    logger.trace('actualizando lista personas')
 
-    const personas = await this.model.obtenerPersonas()
+    const personas = await this.model.verPersonas()
 
     if (personas.length === 0) {
       this.ocultarListadoPersonas()
@@ -157,12 +155,12 @@ export class View {
 
       const sliderBox = document.createElement('input')
       sliderBox.type = 'checkbox'
-      sliderBox.checked = persona.habilitada
+      sliderBox.checked = this.model.verSiPersonaEstaEnCompraEnCurso(persona.id) //persona.habilitada
       sliderBox.addEventListener('click', async (event) => {
         if (sliderBox.checked) {
-          await this.model.habilitarPersona({ idPersona: persona.id })
+          await this.model.agregarPersonaACompraEnCurso(persona.id)
         } else {
-          await this.model.deshabilitarPersona({ idPersona: persona.id })
+          await this.model.quitarPersonaDeCompraEnCurso(persona.id)
         }
         await this.actualizarListaPersonas()
       })
@@ -195,9 +193,8 @@ export class View {
   // GASTOS
 
   async actualizarListaGastos() {
-    logger.trace('actualizando lista gastos')
 
-    const gastos = await this.model.obtenerGastos()
+    const gastos = await this.model.verGastos()
 
     if (gastos.length === 0) {
       this.ocultarListadoGastos()
@@ -217,7 +214,6 @@ export class View {
       const aNodeNombre = document.createElement('a')
       aNodeNombre.innerHTML = gasto.nombre
       aNodeNombre.onclick = () => {
-        // TODO: mostrar menu de edicion de gasto
         this.preguntarSiBorrarGasto({
           idGasto: gasto.id,
           nombreGasto: gasto.nombre,
@@ -231,7 +227,7 @@ export class View {
       trGasto.appendChild(tdPrecio)
 
       const aNodePrecio = document.createElement('a')
-      aNodePrecio.innerHTML = `$${gasto.precioUnitario}`
+      aNodePrecio.innerHTML = `$${gasto.precio}`
       aNodePrecio.onclick = () => {
         this.preguntarSiEditarPrecioUnitarioGasto({
           idGasto: gasto.id,
@@ -251,12 +247,12 @@ export class View {
 
       const sliderBox = document.createElement('input')
       sliderBox.type = 'checkbox'
-      sliderBox.checked = gasto.habilitado
+      sliderBox.checked = this.model.verSiGastoEstaEnCompraEnCurso(gasto.id)
       sliderBox.addEventListener('click', async (event) => {
         if (sliderBox.checked) {
-          await this.model.habilitarGasto({ idGasto: gasto.id })
+          await this.model.agregarGastoACompraEnCurso(gasto.id)
         } else {
-          await this.model.deshabilitarGasto({ idGasto: gasto.id })
+          await this.model.quitarGastoDeCompraEnCurso(gasto.id)
         }
         await this.actualizarListaGastos()
       })
@@ -288,29 +284,28 @@ export class View {
 
   // COMPROMISOS
 
-  async actualizarTablaCompromisos() {
-    logger.trace('actualizando tabla compromisos')
+  async actualizarTablaConsumiciones() {
 
-    const gastos = await this.model.obtenerGastosHabilitados()
+    const items = this.model.compraEnCurso.items
 
-    if (gastos.length === 0) {
-      this.ocultarSeccionCompromisos()
+    if (items.length === 0) {
+      this.ocultarSeccionConsumiciones()
       return true
     }
 
-    const personas = await this.model.obtenerPersonasHabilitadas()
+    const personas = this.model.compraEnCurso.personas
 
     if (personas.length === 0) {
-      this.ocultarSeccionCompromisos()
+      this.ocultarSeccionConsumiciones()
       return true
     }
 
-    trCabeceraCompromisos.replaceChildren()
+    trCabeceraConsumiciones.replaceChildren()
 
     // crear vertice de tabla
     const th = document.createElement('th')
     th.classList.add('col-1')
-    trCabeceraCompromisos.appendChild(th)
+    trCabeceraConsumiciones.appendChild(th)
 
     const textoCabecera = document.createTextNode('Gastos/Personas')
     th.appendChild(textoCabecera)
@@ -318,7 +313,7 @@ export class View {
     // crear cabeceras con nombres de personas
     for (const persona of personas) {
       const th = document.createElement('th')
-      trCabeceraCompromisos.appendChild(th)
+      trCabeceraConsumiciones.appendChild(th)
 
       const aNode = document.createElement('a')
       th.appendChild(aNode)
@@ -331,12 +326,12 @@ export class View {
         })
     }
 
-    // crear filas con gastos y compromisos
-    tbodyCompromisos.replaceChildren()
+    // crear filas con gastos y consumiciones
+    tbodyConsumiciones.replaceChildren()
 
-    for (const gasto of gastos) {
+    for (const item of items) {
       const trGastos = document.createElement('tr')
-      tbodyCompromisos.appendChild(trGastos)
+      tbodyConsumiciones.appendChild(trGastos)
 
       const tdNombreGasto = document.createElement('td')
       trGastos.appendChild(tdNombreGasto)
@@ -344,91 +339,94 @@ export class View {
       const aNode = document.createElement('a')
       tdNombreGasto.appendChild(aNode)
 
-      aNode.innerHTML = gasto.nombre
+      aNode.innerHTML = item.gasto.nombre
       aNode.onclick = () =>
         this.preguntarSiDeshabilitarGasto({
-          nombreGasto: gasto.nombre,
-          idGasto: gasto.id,
+          nombreGasto: item.gasto.nombre,
+          idGasto: item.gasto.id,
         })
 
-      // crear checkboxes y botones de ajuste de porciones
+      // crear checkboxes y botones de ajuste de items
       for (const persona of personas) {
-        const tdCompromiso = document.createElement('td')
-        trGastos.appendChild(tdCompromiso)
+        const tdConsumicion = document.createElement('td')
+        trGastos.appendChild(tdConsumicion)
 
-        const compromiso = await this.model.obtenerCompromiso({
-          idPersona: persona.id,
-          idGasto: gasto.id
-        })
+        const consumicion = item.buscarConsumicion(persona.id)
 
-        if (!compromiso || compromiso.porciones === 0) {
+        if (!consumicion) {
           const checkbox = document.createElement('input')
           checkbox.type = 'checkbox'
           checkbox.checked = false
           checkbox.onclick = async (event) => {
             if (checkbox.checked) {
-              await this.model.crearCompromiso({ idPersona: persona.id, idGasto: gasto.id })
-              await this.actualizarTablaCompromisos()
+              await this.model.aumentarConsumicion({ idPersona: persona.id, idGasto: item.gasto.id })
+              await this.actualizarTablaConsumiciones()
               await this.actualizarTablaDeudas()
             }
           }
-          tdCompromiso.appendChild(checkbox)
+          tdConsumicion.appendChild(checkbox)
         } else {
           const btnDecr = document.createElement('button')
           btnDecr.className = 'btn btn-primary btn-sm mx-1 p-0 px-1'
           btnDecr.innerHTML = '-'
           btnDecr.onclick = async (event) => {
-            await this.model.decrementarCompromiso({ idGasto: gasto.id, idPersona: persona.id })
-            await this.actualizarTablaCompromisos()
+            await this.model.reducirConsumicion({ idPersona: persona.id, idGasto: item.gasto.id })
+            await this.actualizarTablaConsumiciones()
             await this.actualizarTablaDeudas()
           }
-          tdCompromiso.appendChild(btnDecr)
+          tdConsumicion.appendChild(btnDecr)
 
-          const aNodePorciones = document.createElement('a')
-          aNodePorciones.innerHTML = `${compromiso.porciones}`
-          tdCompromiso.appendChild(aNodePorciones)
+          const aNodeItems = document.createElement('a')
+          aNodeItems.innerHTML = `${consumicion.porciones}`
+          tdConsumicion.appendChild(aNodeItems)
 
           const btnIncr = document.createElement('button')
           btnIncr.className = 'btn btn-primary btn-sm mx-1 p-0 px-1'
           btnIncr.innerHTML = '+'
           btnIncr.onclick = async (event) => {
-            await this.model.incrementarCompromiso({ idGasto: gasto.id, idPersona: persona.id })
-            await this.actualizarTablaCompromisos()
+            await this.model.aumentarConsumicion({ idPersona: persona.id, idGasto: item.gasto.id })
+            await this.actualizarTablaConsumiciones()
             await this.actualizarTablaDeudas()
           }
-          tdCompromiso.appendChild(btnIncr)
+          tdConsumicion.appendChild(btnIncr)
         }
       }
     }
-    this.mostrarSeccionCompromisos()
+    this.mostrarSeccionConsumiciones()
   }
 
-  mostrarSeccionCompromisos() {
-    seccionCompromisos.style.setProperty('display', 'block')
+  mostrarSeccionConsumiciones() {
+    seccionConsumiciones.style.setProperty('display', 'block')
   }
 
-  ocultarSeccionCompromisos() {
-    seccionCompromisos.style.setProperty('display', 'none')
+  ocultarSeccionConsumiciones() {
+    seccionConsumiciones.style.setProperty('display', 'none')
   }
 
   // DEUDAS
 
   async actualizarTablaDeudas() {
-    logger.trace('actualizando tabla deudas')
 
-    const deudaTotal = await this.model.obtenerTotal()
+    const deudas = await this.model.verDeudasCompraEnCurso()
+      .sort(
+        (d, dd) => d.persona.nombre > dd.persona.nombre
+          ? 1
+          : d.persona.nombre < dd.persona.nombre
+            ? -1
+            : 0
+      )
 
-    if (deudaTotal === 0) {
+    const deudaTotal = deudas.reduce((accum, d) => accum + d.monto, 0)
+
+    if (Math.round(deudaTotal) === 0) {
       this.ocultarSeccionDeudas()
       return true
     }
 
-    const deudas = await this.model.calcularDeudaPersonas()
-
     tbodyDeudas.replaceChildren()
 
-    for (const nombre in deudas) {
-      if (deudas[nombre] > 0) {
+    for (const deuda of deudas) {
+      if (deuda.monto > 0) {
         const tr = document.createElement('tr')
         tbodyDeudas.appendChild(tr)
 
@@ -436,11 +434,11 @@ export class View {
         tr.appendChild(tdNombre)
 
         const aNode = document.createElement('a')
-        aNode.innerHTML = nombre
+        aNode.innerHTML = deuda.persona.nombre
         tdNombre.appendChild(aNode)
 
         const tdDeuda = document.createElement('td')
-        tdDeuda.replaceChildren(`$${deudas[nombre].toFixed(2)}`)
+        tdDeuda.replaceChildren(`$${deuda.monto.toFixed(2)}`)
         tr.appendChild(tdDeuda)
       }
     }
@@ -461,7 +459,7 @@ export class View {
 
   mostrarSeccionResumen() {
     sectionResumen.classList.remove('hidden')
-    liCompromisos.classList.add('active')
+    liConsumiciones.classList.add('active')
   }
 
   ocultarSecciones() {
@@ -470,7 +468,7 @@ export class View {
     sectionResumen?.classList.add('hidden')
     liPersonas?.classList.remove('active')
     liGastos?.classList.remove('active')
-    liCompromisos?.classList.remove('active')
+    liConsumiciones?.classList.remove('active')
   }
 
   // ------------------------------------------------------------------
@@ -485,10 +483,10 @@ export class View {
       confirmButtonColor: BTN_CONFIRM_COLOR,
     })
     if (result.isConfirmed) {
-      await this.model.eliminarPersona({ idPersona })
+      await this.model.eliminarPersona(idPersona)
 
       await this.actualizarListaPersonas()
-      await this.actualizarTablaCompromisos()
+      await this.actualizarTablaConsumiciones()
       await this.actualizarTablaDeudas()
     }
   }
@@ -503,10 +501,10 @@ export class View {
       confirmButtonColor: BTN_CONFIRM_COLOR,
     })
     if (result.isConfirmed) {
-      await this.model.deshabilitarPersona({ idPersona })
+      await this.model.quitarPersonaDeCompraEnCurso(idPersona)
 
       await this.actualizarListaPersonas()
-      await this.actualizarTablaCompromisos()
+      await this.actualizarTablaConsumiciones()
       await this.actualizarTablaDeudas()
     }
   }
@@ -521,10 +519,10 @@ export class View {
       confirmButtonColor: BTN_CONFIRM_COLOR,
     })
     if (result.isConfirmed) {
-      await this.model.eliminarPersonas()
+      await this.model.eliminarTodasLasPersonas()
 
       await this.actualizarListaPersonas()
-      await this.actualizarTablaCompromisos()
+      await this.actualizarTablaConsumiciones()
       await this.actualizarTablaDeudas()
     }
   }
@@ -539,16 +537,15 @@ export class View {
       confirmButtonText: 'Modificar',
       cancelButtonText: `Cancelar`,
       inputValidator: (value) => {
-        if (!value || isNaN(Number(value)) || Number(value) < 0.01) {
-          return 'El monto debe ser un número mayor a 0.01'
+        if (!value || isNaN(Number(value)) || Number(value) < 1) {
+          return 'El monto debe ser un número mayor a 1'
         }
       },
       confirmButtonColor: BTN_CONFIRM_COLOR,
-      // heightAuto: false
     })
 
     if (result.isConfirmed) {
-      await this.model.modificarPrecioUnitarioGasto({ idGasto, precioUnitario: result.value })
+      await this.model.modificarPrecioGasto({ idGasto, precio: result.value })
       await this.actualizarListaGastos()
     }
   }
@@ -561,11 +558,10 @@ export class View {
       confirmButtonText: 'Eliminar',
       cancelButtonText: `Cancelar`,
       confirmButtonColor: BTN_CONFIRM_COLOR,
-      // heightAuto: false
     })
 
     if (result.isConfirmed) {
-      await this.model.eliminarGasto({ idGasto })
+      await this.model.eliminarGasto(idGasto)
 
       await this.actualizarListaGastos()
     }
@@ -582,8 +578,8 @@ export class View {
     })
 
     if (result.isConfirmed) {
-      await this.model.deshabilitarGasto({ idGasto })
-      await this.actualizarTablaCompromisos()
+      await this.model.quitarGastoDeCompraEnCurso(idGasto)
+      await this.actualizarTablaConsumiciones()
     }
 
     return result.isConfirmed
@@ -623,8 +619,8 @@ export class View {
       await this.actualizarListaPersonas()
     } else if (liGastos.classList.contains('active')) {
       await this.actualizarListaGastos()
-    } else if (liCompromisos.classList.contains('active')) {
-      await this.actualizarTablaCompromisos()
+    } else if (liConsumiciones.classList.contains('active')) {
+      await this.actualizarTablaConsumiciones()
       await this.actualizarTablaDeudas()
     } else {
       alert('error interno! ninguna seccion seleccionada!')

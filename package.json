@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "bootstrap": "^5.3.1",
+    "sweetalert2": "^11.10.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30"
+  },
+  "scripts": {
+    "test": "nodemon -e mjs test/tests.mjs",
+    "test:once": "node test/tests.mjs"
+  }
+}

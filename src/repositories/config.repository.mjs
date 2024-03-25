@@ -1,15 +1,18 @@
-import { Storage } from '../storage/storage.mjs'
+import { Storage } from '../storages/storage.mjs'
 
 export class ConfigRepository {
 
   /** @param {Storage} storage */
   constructor(storage) {
+    /** @type {any[]} */
+    this.keyValuePairs = []
+    /** @type {Storage} */
     this.storage = storage
   }
 
   async getOrDefault(key, defaultValue) {
-    const keyValuesPairs = await this.storage.read()
-    const pair = keyValuesPairs.find(kv => kv.key === key)
+    await this.#load()
+    const pair = this.keyValuePairs.find(kv => kv.key === key)
     if (!pair) {
       return defaultValue
     }
@@ -17,13 +20,29 @@ export class ConfigRepository {
   }
 
   async set(key, value) {
-    const keyValuesPairs = await this.storage.read()
-    const pair = keyValuesPairs.find(kv => kv.key === key)
+    await this.#load()
+    const pair = this.keyValuePairs.find(kv => kv.key === key)
     if (pair) {
       pair.value = value
     } else {
-      keyValuesPairs.push({ key, value })
+      this.keyValuePairs.push({ key, value })
     }
-    await this.storage.write(keyValuesPairs)
+    await this.#store()
+  }
+
+  /**
+   * almacena todos los keyValuePairs en el storage correspondiente
+   */
+  async #store() {
+    await this.storage.write(this.keyValuePairs)
+  }
+
+  /**
+   * carga desde el storage correspondiente todos las personas en memoria
+   */
+  async #load() {
+    this.keyValuePairs.length = 0
+    const pojos = await this.storage.read()
+    pojos.forEach(pojo => this.keyValuePairs.push(pojo))
   }
 }

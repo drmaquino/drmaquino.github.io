@@ -10,6 +10,7 @@
   --font-size-medium: 1.2em;
   --font-size-large: 1.5em;
   --font-size-larger: 2em;
+  --icon-size: 0.8em;
 }
 
 * {
@@ -195,6 +196,14 @@ nav {
   align-items: center;
   justify-content: center;
   font-size: var(--font-size-large);
+}
+
+.icon {
+  width: var(--icon-size);
+}
+
+.icon path {
+  fill: var(--font-color);
 }
 
 .tab:hover,

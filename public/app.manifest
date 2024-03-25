@@ -1,0 +1,12 @@
+CACHE MANIFEST 
+# version 1.0.0
+
+CACHE:
+/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js
+/node_modules/bootstrap/dist/css/bootstrap.min.css
+
+NETWORK: 
+*
+
+FALLBACK:
+ 
