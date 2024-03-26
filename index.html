@@ -78,14 +78,15 @@
       <div class="m-3 p-3 bg-light rounded-3">
         <h1 class="mb-3"><u>Cuánto pago?</u></h1>
         <!-- seccion de personas -->
-        <section class="not-hidden" id="sectionPersonas">
+        <section class="hidden" id="seccionPersonas">
           <h2>Quiénes comen?</h2>
           <!-- visualizacion -->
-          <div id="listadoPersonas" style="display: none">
+          <div id="listadoPersonas" class="hidden">
             <table class="table table-bordered">
               <thead class="table-secondary">
                 <tr>
                   <th>Nombre</th>
+                  <th class="col-1">En compra</th>
                 </tr>
               </thead>
               <tbody id="tbodyPersonas"></tbody>
@@ -110,16 +111,16 @@
           </form>
         </section>
         <!-- seccion de gastos -->
-        <section class="hidden" id="sectionGastos">
+        <section class="hidden" id="seccionGastos">
           <h2>Qué comen?</h2>
           <!-- visualizacion -->
-          <div id="listadoGastos" style="display: none">
+          <div id="listadoGastos" class="hidden">
             <table class="table table-bordered">
               <thead class="table-secondary">
                 <tr>
                   <th>Nombre</th>
                   <th>Precio</th>
-                  <th class="col-1">Activo</th>
+                  <th class="col-1">En compra</th>
                 </tr>
               </thead>
               <tbody id="tbodyGastos"></tbody>
@@ -151,9 +152,9 @@
           </form>
         </section>
         <!-- vista de compra -->
-        <section class="hidden" id="sectionResumen">
+        <section class="hidden" id="seccionCompraEnCurso">
           <!-- consumiciones -->
-          <div id="seccionConsumiciones" style="display: none">
+          <div id="tablaConsumiciones" class="hidden">
             <h2>Quién come qué?</h2>
             <div class="overflow-auto">
               <table class="table table-bordered">
@@ -167,7 +168,7 @@
             </div>
           </div>
           <!-- deudas -->
-          <div id="seccionDeudas" style="display: none">
+          <div id="listadoDeudas" class="hidden">
             <h2>Cuánto debo?</h2>
             <table class="table table-bordered">
               <thead class="table-secondary">
@@ -191,7 +192,7 @@
     <nav>
       <!-- tabs -->
       <ul class="tabs">
-        <li id="liPersonas" class="tab active">
+        <li id="liTabPersonas" class="tab">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" class="icon">
             <path
                   d="M160 0a48 48 0 1 1 0 96 48 48 0 1 1 0-96zM88 384H70.2c-10.9 0-18.6-10.7-15.2-21.1L93.3 248.1 59.4 304.5c-9.1 15.1-28.8 20-43.9 10.9s-20-28.8-10.9-43.9l53.6-89.2c20.3-33.7 56.7-54.3 96-54.3h11.6c39.3 0 75.7 20.6 96 54.3l53.6 89.2c9.1 15.1 4.2 34.8-10.9 43.9s-34.8 4.2-43.9-10.9l-33.9-56.3L265 362.9c3.5 10.4-4.3 21.1-15.2 21.1H232v96c0 17.7-14.3 32-32 32s-32-14.3-32-32V384H152v96c0 17.7-14.3 32-32 32s-32-14.3-32-32V384z" />
@@ -201,7 +202,7 @@
                   d="M112 48a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zm40 304V480c0 17.7-14.3 32-32 32s-32-14.3-32-32V256.9L59.4 304.5c-9.1 15.1-28.8 20-43.9 10.9s-20-28.8-10.9-43.9l58.3-97c17.4-28.9 48.6-46.6 82.3-46.6h29.7c33.7 0 64.9 17.7 82.3 46.6l58.3 97c9.1 15.1 4.2 34.8-10.9 43.9s-34.8 4.2-43.9-10.9L232 256.9V480c0 17.7-14.3 32-32 32s-32-14.3-32-32V352H152z" />
           </svg>
         </li>
-        <li id="liGastos" class="tab">
+        <li id="liTabGastos" class="tab">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="icon">
             <path
                   d="M169.7 .9c-22.8-1.6-41.9 14-47.5 34.7L110.4 80c.5 0 1.1 0 1.6 0c176.7 0 320 143.3 320 320c0 .5 0 1.1 0 1.6l44.4-11.8c20.8-5.5 36.3-24.7 34.7-47.5C498.5 159.5 352.5 13.5 169.7 .9zM399.8 410.2c.1-3.4 .2-6.8 .2-10.2c0-159.1-128.9-288-288-288c-3.4 0-6.8 .1-10.2 .2L.5 491.9c-1.5 5.5 .1 11.4 4.1 15.4s9.9 5.6 15.4 4.1L399.8 410.2zM176 208a32 32 0 1 1 0 64 32 32 0 1 1 0-64zm64 128a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zM96 384a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z" />
@@ -215,7 +216,7 @@
                   d="M367.1 160c.6-5.3 .9-10.6 .9-16C368 64.5 303.5 0 224 0S80 64.5 80 144c0 5.4 .3 10.7 .9 16H80c-26.5 0-48 21.5-48 48s21.5 48 48 48h53.5 181H368c26.5 0 48-21.5 48-48s-21.5-48-48-48h-.9zM96 288L200.8 497.7c4.4 8.8 13.3 14.3 23.2 14.3s18.8-5.5 23.2-14.3L352 288H96z" />
           </svg>
         </li>
-        <li id="liConsumiciones" class="tab">
+        <li id="liTabCompraEnCurso" class="tab">
           <svg xmlns="http://www.w3.org/2000/svg"
                viewBox="0 0 320 512"
                class="icon">

@@ -6,6 +6,23 @@ import { Compra } from './Compra.mjs'
 import { Gasto } from './Gasto.mjs'
 import { Persona } from './Persona.mjs'
 
+/** 
+ * @typedef {{
+ *   id: string
+ *   nombre: string
+ *   enCompra: boolean
+ * }} PersonaViewDto
+ */
+
+/** 
+ * @typedef {{
+*   id: string
+*   nombre: string
+*   precio: number
+*   enCompra: boolean
+* }} GastoViewDto
+*/
+
 export class Sistema {
 
   /** @type {PersonasRepository} */ personasRepository
@@ -28,8 +45,6 @@ export class Sistema {
     this.personasRepository = personasRepository
     this.gastosRepository = gastosRepository
     this.comprasRepository = comprasRepository
-
-    this.compraEnCurso = new Compra()
   }
 
   // PERSONAS -----------------------------------------------
@@ -52,7 +67,7 @@ export class Sistema {
 
   async verPersonas() {
     const personas = await this.personasRepository.findAll()
-    return personas.map(p => p.toPOJO())
+    return personas.map(p => this.personaToPersonaViewDto(p))
   }
 
   verPersonasEnCompraEnCurso() {
@@ -121,7 +136,7 @@ export class Sistema {
 
   async verGastos() {
     const gastos = await this.gastosRepository.findAll()
-    return gastos.map(g => g.toPOJO())
+    return gastos.map(g => this.gastoToGastoViewDto(g))
   }
 
   /**
@@ -161,8 +176,12 @@ export class Sistema {
    * @param {string} idGasto 
    */
   async quitarGastoDeCompraEnCurso(idGasto) {
-    this.compraEnCurso.eliminarItem(idGasto)
-    await this.comprasRepository.save(this.compraEnCurso)
+    try {
+      this.compraEnCurso.eliminarItem(idGasto)
+      await this.comprasRepository.save(this.compraEnCurso)
+    } catch (error) {
+      // TODO: log something? change method so it doesnt throw..? 
+    }
   }
 
   /**
@@ -230,8 +249,21 @@ export class Sistema {
     return this.compraEnCurso.toPOJO()
   }
 
+  verItemsCompraEnCurso() {
+    return this.compraEnCurso.verItems().map(i => i.toPOJO())
+  }
+
   verDeudasCompraEnCurso() {
     return this.compraEnCurso.verResumenDeudas().toArray().map(d => d.toPOJO())
+  }
+
+  //TODO: usar
+  async init() {
+    this.compraEnCurso = await this.comprasRepository.findNewest()
+    if (!this.compraEnCurso) {
+      this.compraEnCurso = new Compra()
+    }
+    await this.comprasRepository.save(this.compraEnCurso)
   }
 
   //TODO: usar
@@ -253,5 +285,32 @@ export class Sistema {
     await this.eliminarTodosLosGastos()
     await this.eliminarTodasLasCompras()
     this.compraEnCurso = new Compra()
+  }
+
+  // UTILS ---------------------------------------------
+
+  /**
+   * @param {Persona} persona 
+   * @returns {PersonaViewDto}
+   */
+  personaToPersonaViewDto(persona) {
+    return {
+      id: persona.id,
+      nombre: persona.nombre,
+      enCompra: this.verSiPersonaEstaEnCompraEnCurso(persona.id)
+    }
+  }
+
+  /**
+   * @param {Gasto} gasto 
+   * @returns {GastoViewDto}
+   */
+  gastoToGastoViewDto(gasto) {
+    return {
+      id: gasto.id,
+      nombre: gasto.nombre,
+      precio: gasto.precio,
+      enCompra: this.verSiGastoEstaEnCompraEnCurso(gasto.id)
+    }
   }
 }

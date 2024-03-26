@@ -19,6 +19,12 @@ const sistema = new Sistema({
   comprasRepository
 })
 
+await sistema.init()
+
 const view = new View(sistema)
+
+// view.activeView = 'gastos'
+// view.activeView = 'personas'
+view.activeView = 'compraEnCurso'
 
 await view.refresh()

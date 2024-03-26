@@ -73,22 +73,35 @@ td,
 th {
   white-space: nowrap;
   text-align: center;
-
 }
 
 td {
   font-size: var(--font-size-medium);
-  /* text-align: center; */
+  align-content: center;
 }
 
 td:nth-child(3) {
   text-align: center;
 }
 
-.table-personas-td {
+/* .tarjeta-gasto {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+} */
+
+.tarjeta-gasto-compartir {
+  display: flex;
   align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+
+  & input[type="checkbox"] {
+    accent-color: var(--btn-color-base)
+  }
+
+  & input[type="checkbox"]:hover {
+    accent-color: var(--btn-color-activo)
+  }
 }
 
 .table-gastos-checkbox {
@@ -215,31 +228,3 @@ nav {
   border-left: 1px solid var(--btn-border-color);
   border-right: 1px solid var(--btn-border-color);
 }
-
-/* ------------------------------------------------------------------- */
-
-/* 
---bg-color: #888;
---btn-color-base: #555;
---btn-color-activo: #666;
---btn-border-color: #444;
---font-color: #ddd;
-*/
-
-/*
---btn-color-base: #007acc; 
-*/
-
-/*
-Primary: #0074e4 (Deep Blue)
-Secondary: #4caf50 (Green)
-Accent: #ff5722 (Orange)
-
-Primary: #333333 (Dark Gray)
-Secondary: #666666 (Medium Gray)
-Accent: #007acc (Blue)
-
-Primary: #ff6f61 (Red-Orange)
-Secondary: #ffcc29 (Yellow)
-Accent: #3f51b5 (Royal Blue)
-*/

@@ -66,14 +66,6 @@ export class Item {
     }
   }
 
-  /**
-   * @param {string} idPersona
-   */
-  buscarConsumicion(idPersona) {
-    const consumicion = this.consumiciones.find(c => c.persona.id === idPersona)
-    return consumicion || null
-  }
-
   eliminarConsumicionesDeUnaPersona(idPersona) {
     this.consumiciones = this.consumiciones.filter(c => c.persona.id !== idPersona)
   }

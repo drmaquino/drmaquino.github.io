@@ -144,7 +144,8 @@ export class Compra {
     const indiceItem = this.items.findIndex(i => i.gasto.id === idGasto)
     if (indiceItem === -1) throw new Error('no se puede eliminar el item: el item no existe')
 
-    this.items.splice(indiceItem, 1)
+    const [eliminado] = this.items.splice(indiceItem, 1)
+    return eliminado
   }
 
   eliminarTodosLosItems() {
