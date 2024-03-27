@@ -367,15 +367,15 @@ export class View {
           idGasto: item.gasto.id,
         })
 
-      const div = document.createElement('div')
-      div.classList.add('tarjeta-gasto-compartir')
-      tdNombreGasto.appendChild(div)
+      const divCompartir = document.createElement('div')
+      divCompartir.classList.add('item-tarjeta-gasto')
+      tdNombreGasto.appendChild(divCompartir)
 
-      const checkbox = document.createElement('input')
-      checkbox.type = 'checkbox'
-      checkbox.checked = item.compartido
-      checkbox.onclick = async (event) => {
-        if (checkbox.checked) {
+      const checkboxCompartir = document.createElement('input')
+      checkboxCompartir.type = 'checkbox'
+      checkboxCompartir.checked = item.compartido
+      checkboxCompartir.onclick = async (event) => {
+        if (checkboxCompartir.checked) {
           await this.model.marcarGastoEnCompraComoCompartido(item.gasto.id)
         } else {
           await this.model.marcarGastoEnCompraComoNoCompartido(item.gasto.id)
@@ -383,11 +383,36 @@ export class View {
         await this.actualizarTablaConsumiciones()
         await this.actualizarTablaDeudas()
       }
-      div.appendChild(checkbox)
+      divCompartir.appendChild(checkboxCompartir)
 
       const pCompartir = document.createElement('small')
       pCompartir.innerHTML = 'compartir'
-      div.appendChild(pCompartir)
+      divCompartir.appendChild(pCompartir)
+
+      if (item.compartido) {
+        const divPorciones = document.createElement('div')
+        divPorciones.classList.add('item-tarjeta-gasto')
+        tdNombreGasto.appendChild(divPorciones)
+
+        const checkboxPorciones = document.createElement('input')
+        checkboxPorciones.type = 'checkbox'
+        checkboxPorciones.checked = item.compartido //TODO: revisar!
+        checkboxPorciones.disabled = true
+        checkboxPorciones.onclick = async (event) => {
+          if (checkboxPorciones.checked) {
+            // await this.model.marcarGastoEnCompraComoCompartido(item.gasto.id)
+          } else {
+            // await this.model.marcarGastoEnCompraComoNoCompartido(item.gasto.id)
+          }
+          await this.actualizarTablaConsumiciones()
+          await this.actualizarTablaDeudas()
+        }
+        divPorciones.appendChild(checkboxPorciones)
+
+        const pPorciones = document.createElement('small')
+        pPorciones.innerHTML = 'porciones'
+        divPorciones.appendChild(pPorciones)
+      }
 
       // crear checkboxes y botones de ajuste de items
       for (const persona of personas) {

@@ -84,12 +84,7 @@ td:nth-child(3) {
   text-align: center;
 }
 
-/* .tarjeta-gasto {
-  display: flex;
-  flex-direction: column;
-} */
-
-.tarjeta-gasto-compartir {
+.item-tarjeta-gasto {
   display: flex;
   align-items: center;
   justify-content: center;
