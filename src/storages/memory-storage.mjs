@@ -4,7 +4,7 @@ export class MemoryStorage extends Storage {
   /** @param {string} entityName */
   constructor(entityName) {
     super(entityName)
-    this.json = ''
+    this.json = '[]'
   }
 
   async read() {

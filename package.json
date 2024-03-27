@@ -7,7 +7,8 @@
     "@types/node": "^20.11.30"
   },
   "scripts": {
-    "test": "nodemon -e mjs test/tests.mjs",
-    "test:once": "node test/tests.mjs"
+    "test": "node --test",
+    "test:watch": "node --test --watch",
+    "test:lcov": "node --test --experimental-test-coverage --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info"
   }
 }

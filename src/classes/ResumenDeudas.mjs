@@ -1,7 +1,7 @@
 import { Deuda } from './Deuda.mjs'
 
 /**
- * @extends  {Map<string, Deuda>}
+ * @extends {Map<string, Deuda>}
  */
 export class ResumenDeudas extends Map {
   constructor(args) {
@@ -13,7 +13,7 @@ export class ResumenDeudas extends Map {
    */
   add(deuda) {
     if (this.has(deuda.persona.id)) {
-      this.set(deuda.persona.id, new Deuda({
+      this.set(deuda.persona.id, Deuda.fromPOJO({
         persona: deuda.persona,
         monto: deuda.monto + (this.get(deuda.persona.id)?.monto || 0)
       }))

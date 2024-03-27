@@ -257,13 +257,12 @@ export class Sistema {
     return this.compraEnCurso.verResumenDeudas().toArray().map(d => d.toPOJO())
   }
 
-  //TODO: usar
   async init() {
     this.compraEnCurso = await this.comprasRepository.findNewest()
     if (!this.compraEnCurso) {
       this.compraEnCurso = new Compra()
+      await this.comprasRepository.save(this.compraEnCurso)
     }
-    await this.comprasRepository.save(this.compraEnCurso)
   }
 
   //TODO: usar
