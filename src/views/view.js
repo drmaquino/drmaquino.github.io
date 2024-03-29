@@ -354,7 +354,6 @@ export class View {
       tbodyConsumiciones.appendChild(trGastos)
 
       const tdNombreGasto = document.createElement('td')
-      // tdNombreGasto.classList.add('tarjeta-gasto')
       trGastos.appendChild(tdNombreGasto)
 
       const aNode = document.createElement('a')
@@ -377,6 +376,7 @@ export class View {
       checkboxCompartir.onclick = async (event) => {
         if (checkboxCompartir.checked) {
           await this.model.marcarGastoEnCompraComoCompartido(item.gasto.id)
+          await this.model.dejarDeDividirGastoEnCompraEnPartesIguales(item.gasto.id)
         } else {
           await this.model.marcarGastoEnCompraComoNoCompartido(item.gasto.id)
         }
@@ -396,13 +396,12 @@ export class View {
 
         const checkboxPorciones = document.createElement('input')
         checkboxPorciones.type = 'checkbox'
-        checkboxPorciones.checked = item.compartido //TODO: revisar!
-        checkboxPorciones.disabled = true
+        checkboxPorciones.checked = item.seDivideEnPartesIguales
         checkboxPorciones.onclick = async (event) => {
           if (checkboxPorciones.checked) {
-            // await this.model.marcarGastoEnCompraComoCompartido(item.gasto.id)
+            await this.model.dividirGastoEnCompraEnPartesIguales(item.gasto.id)
           } else {
-            // await this.model.marcarGastoEnCompraComoNoCompartido(item.gasto.id)
+            await this.model.dejarDeDividirGastoEnCompraEnPartesIguales(item.gasto.id)
           }
           await this.actualizarTablaConsumiciones()
           await this.actualizarTablaDeudas()
@@ -410,7 +409,7 @@ export class View {
         divPorciones.appendChild(checkboxPorciones)
 
         const pPorciones = document.createElement('small')
-        pPorciones.innerHTML = 'porciones'
+        pPorciones.innerHTML = 'partes iguales'
         divPorciones.appendChild(pPorciones)
       }
 
@@ -423,6 +422,7 @@ export class View {
         if (!consumicion) {
           const checkbox = document.createElement('input')
           checkbox.type = 'checkbox'
+          checkbox.classList.add('bigger')
           checkbox.checked = false
           checkbox.onclick = async (event) => {
             if (checkbox.checked) {
@@ -433,29 +433,58 @@ export class View {
           }
           tdConsumicion.appendChild(checkbox)
         } else {
-          const btnDecr = document.createElement('button')
-          btnDecr.className = 'btn btn-primary btn-sm mx-1 p-0 px-1'
-          btnDecr.innerHTML = '-'
-          btnDecr.onclick = async (event) => {
-            await this.model.reducirConsumicion({ idPersona: persona.id, idGasto: item.gasto.id })
-            await this.actualizarTablaConsumiciones()
-            await this.actualizarTablaDeudas()
-          }
-          tdConsumicion.appendChild(btnDecr)
+          if (item.compartido && item.seDivideEnPartesIguales) {
+            const checkbox = document.createElement('input')
+            checkbox.type = 'checkbox'
+            checkbox.classList.add('bigger')
+            checkbox.checked = true
+            checkbox.onclick = async (event) => {
+              if (!checkbox.checked) {
+                await this.model.reducirConsumicion({ idPersona: persona.id, idGasto: item.gasto.id })
+                await this.actualizarTablaConsumiciones()
+                await this.actualizarTablaDeudas()
+              }
+            }
+            tdConsumicion.appendChild(checkbox)
+          } else {
+            const divSelectorDePorciones = document.createElement('div')
+            divSelectorDePorciones.classList.add('item-consumicion')
+            tdConsumicion.appendChild(divSelectorDePorciones)
 
-          const aNodeItems = document.createElement('a')
-          aNodeItems.innerHTML = `${consumicion.porciones}`
-          tdConsumicion.appendChild(aNodeItems)
+            const btnDecr = document.createElement('button')
+            btnDecr.className = 'btn btn-primary btn-sm mx-1 p-0 px-1'
+            btnDecr.innerHTML = '-'
+            btnDecr.onclick = async (event) => {
+              await this.model.reducirConsumicion({ idPersona: persona.id, idGasto: item.gasto.id })
+              await this.actualizarTablaConsumiciones()
+              await this.actualizarTablaDeudas()
+            }
+            divSelectorDePorciones.appendChild(btnDecr)
 
-          const btnIncr = document.createElement('button')
-          btnIncr.className = 'btn btn-primary btn-sm mx-1 p-0 px-1'
-          btnIncr.innerHTML = '+'
-          btnIncr.onclick = async (event) => {
-            await this.model.aumentarConsumicion({ idPersona: persona.id, idGasto: item.gasto.id })
-            await this.actualizarTablaConsumiciones()
-            await this.actualizarTablaDeudas()
+            const aNodeItems = document.createElement('a')
+            aNodeItems.innerHTML = `${consumicion.porciones}`
+            divSelectorDePorciones.appendChild(aNodeItems)
+
+            const btnIncr = document.createElement('button')
+            btnIncr.className = 'btn btn-primary btn-sm mx-1 p-0 px-1'
+            btnIncr.innerHTML = '+'
+            btnIncr.onclick = async (event) => {
+              await this.model.aumentarConsumicion({ idPersona: persona.id, idGasto: item.gasto.id })
+              await this.actualizarTablaConsumiciones()
+              await this.actualizarTablaDeudas()
+            }
+            divSelectorDePorciones.appendChild(btnIncr)
+
+            if (item.compartido) {
+              const smallPorciones = document.createElement('small')
+              smallPorciones.replaceChildren('porciones')
+              tdConsumicion.appendChild(smallPorciones)
+            } else {
+              const smallPorciones = document.createElement('small')
+              smallPorciones.replaceChildren('unidades')
+              tdConsumicion.appendChild(smallPorciones)
+            }
           }
-          tdConsumicion.appendChild(btnIncr)
         }
       }
     }

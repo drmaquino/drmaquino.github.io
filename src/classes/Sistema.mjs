@@ -218,6 +218,22 @@ export class Sistema {
     await this.comprasRepository.save(this.compraEnCurso)
   }
 
+  /**
+   * @param {string} idGasto 
+   */
+  async dividirGastoEnCompraEnPartesIguales(idGasto) {
+    this.compraEnCurso.dividirGastoEnPartesIguales(idGasto)
+    await this.comprasRepository.save(this.compraEnCurso)
+  }
+
+  /**
+   * @param {string} idGasto 
+   */
+  async dejarDeDividirGastoEnCompraEnPartesIguales(idGasto) {
+    this.compraEnCurso.dejarDeDividirGastoEnPartesIguales(idGasto)
+    await this.comprasRepository.save(this.compraEnCurso)
+  }
+
   // CONSUMICIONES
 
   /**

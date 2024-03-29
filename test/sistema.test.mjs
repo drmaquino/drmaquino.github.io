@@ -2,7 +2,6 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert'
 
 import { crearSistema, mockearDeudas, mockearGastos, mockearPersonas } from './utils/utils.mjs'
-// import { pEnCurso, gEnCurso } from './utils/utils.mjs'
 
 const mockDatosPersona1 = { nombre: '1 Marian A' }
 const mockDatosPersona2 = { nombre: '2 Carli G' }
@@ -379,29 +378,56 @@ describe('cuanto pago', () => {
       })
     })
     describe('al compartir un gasto entre varios', () => {
-      it('se ajustan las deudas de la compra en curso', async () => {
-        const sistema = await crearSistema()
+      describe('dividiendolo en distintas proporciones', () => {
+        it('se ajustan las deudas de la compra en curso', async () => {
+          const sistema = await crearSistema()
 
-        const p1 = await sistema.agendarPersona(mockDatosPersona1)
-        const p2 = await sistema.agendarPersona(mockDatosPersona2)
+          const p1 = await sistema.agendarPersona(mockDatosPersona1)
+          const p2 = await sistema.agendarPersona(mockDatosPersona2)
 
-        const g1 = await sistema.agendarGasto(mockDatosGasto1)
-        const g2 = await sistema.agendarGasto(mockDatosGasto2)
+          const g1 = await sistema.agendarGasto(mockDatosGasto1)
+          const g2 = await sistema.agendarGasto(mockDatosGasto2)
 
-        await sistema.aumentarConsumicion({ idPersona: p1.id, idGasto: g1.id })
-        await sistema.aumentarConsumicion({ idPersona: p2.id, idGasto: g1.id })
+          await sistema.aumentarConsumicion({ idPersona: p1.id, idGasto: g1.id })
+          await sistema.aumentarConsumicion({ idPersona: p2.id, idGasto: g1.id })
 
-        await sistema.aumentarConsumicion({ idPersona: p1.id, idGasto: g2.id })
-        await sistema.aumentarConsumicion({ idPersona: p2.id, idGasto: g2.id })
+          await sistema.aumentarConsumicion({ idPersona: p1.id, idGasto: g2.id })
+          await sistema.aumentarConsumicion({ idPersona: p2.id, idGasto: g2.id })
 
-        await sistema.marcarGastoEnCompraComoCompartido(g1.id)
+          await sistema.marcarGastoEnCompraComoCompartido(g1.id)
 
-        const deudasEsperadas = mockearDeudas([p1, 250], [p2, 250])
-        const deudasObtenidas = await sistema.verDeudasCompraEnCurso()
-        assert.deepStrictEqual(
-          deudasObtenidas,
-          deudasEsperadas,
-          'Deudas')
+          const deudasEsperadas = mockearDeudas([p1, 250], [p2, 250])
+          const deudasObtenidas = await sistema.verDeudasCompraEnCurso()
+          assert.deepStrictEqual(
+            deudasObtenidas,
+            deudasEsperadas,
+            'Deudas')
+        })
+      })
+      describe('dividiendolo en partes iguales', () => {
+        it('se ajustan las deudas de la compra en curso', async () => {
+          const sistema = await crearSistema()
+
+          const p1 = await sistema.agendarPersona(mockDatosPersona1)
+          const p2 = await sistema.agendarPersona(mockDatosPersona2)
+
+          const g3 = await sistema.agendarGasto(mockDatosGasto3)
+
+          await sistema.aumentarConsumicion({ idPersona: p1.id, idGasto: g3.id })
+          await sistema.aumentarConsumicion({ idPersona: p1.id, idGasto: g3.id })
+
+          await sistema.aumentarConsumicion({ idPersona: p2.id, idGasto: g3.id })
+
+          await sistema.marcarGastoEnCompraComoCompartido(g3.id)
+          await sistema.dividirGastoEnCompraEnPartesIguales(g3.id)
+
+          const deudasEsperadas = mockearDeudas([p1, 150], [p2, 150])
+          const deudasObtenidas = await sistema.verDeudasCompraEnCurso()
+          assert.deepStrictEqual(
+            deudasObtenidas,
+            deudasEsperadas,
+            'Deudas')
+        })
       })
     })
   })

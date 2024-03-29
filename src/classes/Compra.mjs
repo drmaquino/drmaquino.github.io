@@ -137,6 +137,20 @@ export class Compra {
     item.dejarDeCompartir()
   }
 
+  dividirGastoEnPartesIguales(idGasto) {
+    const item = this.items.find(i => i.gasto.id === idGasto)
+    if (!item) throw new Error('no se puede dividir el item en partes iguales: el item no existe')
+
+    item.dividirEnPartesIguales()
+  }
+
+  dejarDeDividirGastoEnPartesIguales(idGasto) {
+    const item = this.items.find(i => i.gasto.id === idGasto)
+    if (!item) throw new Error('no se puede dejar de dividir el item en partes iguales: el item no existe')
+
+    item.dejarDeDividirEnPartesIguales()
+  }
+
   /**
    * @param {string} idGasto
    */

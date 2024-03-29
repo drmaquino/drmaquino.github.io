@@ -89,14 +89,24 @@ td:nth-child(3) {
   align-items: center;
   justify-content: center;
   gap: 0.4em;
+}
 
-  & input[type="checkbox"] {
-    accent-color: var(--btn-color-base)
-  }
+.item-consumicion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  & input[type="checkbox"]:hover {
-    accent-color: var(--btn-color-activo)
-  }
+.bigger {
+  transform: scale(1.4);
+}
+
+input[type="checkbox"] {
+  accent-color: var(--btn-color-base)
+}
+
+input[type="checkbox"]:hover {
+  accent-color: var(--btn-color-activo)
 }
 
 .table-gastos-checkbox {

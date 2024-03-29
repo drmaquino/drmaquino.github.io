@@ -11,6 +11,7 @@ import { Persona } from './Persona.mjs'
  *   gasto: import('./Gasto.mjs').GastoDto
  *   consumiciones: import('./Consumicion.mjs').ConsumicionDto[]
  *   compartido: boolean
+ *   seDivideEnPartesIguales: boolean
  * }} ItemDto
  */
 
@@ -19,6 +20,7 @@ export class Item {
   /** @type {Gasto} */ gasto
   /** @type {Consumicion[]} */ consumiciones
   /** @type {boolean} */ compartido
+  /** @type {boolean} */ seDivideEnPartesIguales
 
   /**
    * @param {{
@@ -26,18 +28,21 @@ export class Item {
    *   gasto: Gasto
    *   consumiciones?: Consumicion[]
    *   compartido?: boolean
+   *   seDivideEnPartesIguales?: boolean
    * }} param0
    */
   constructor({
     id,
     gasto,
     consumiciones,
-    compartido
+    compartido,
+    seDivideEnPartesIguales
   }) {
     this.id = id || randomId()
     this.gasto = gasto
     this.consumiciones = consumiciones || []
     this.compartido = compartido || false
+    this.seDivideEnPartesIguales = seDivideEnPartesIguales || false
   }
 
   /**
@@ -82,12 +87,40 @@ export class Item {
     this.compartido = false
   }
 
+  dividirEnPartesIguales() {
+    this.seDivideEnPartesIguales = true
+  }
+
+  dejarDeDividirEnPartesIguales() {
+    this.seDivideEnPartesIguales = false
+  }
+
   /**
    * @returns {ResumenDeudas}
    */
   verResumenDeudas() {
     const resumenDeudas = new ResumenDeudas()
-    if (this.compartido) {
+
+    if (!this.compartido) {
+      for (const consumicion of this.consumiciones) {
+        resumenDeudas.add(new Deuda({
+          persona: consumicion.persona,
+          monto: consumicion.porciones * this.gasto.precio
+        }))
+      }
+    }
+
+    else if (this.seDivideEnPartesIguales) {
+      const cantPorciones = this.consumiciones.length
+      for (const consumicion of this.consumiciones) {
+        resumenDeudas.add(new Deuda({
+          persona: consumicion.persona,
+          monto: this.gasto.precio / cantPorciones
+        }))
+      }
+    }
+
+    else {
       const cantPorciones = this.consumiciones.reduce(
         (accum, consumicion) => accum + consumicion.porciones, 0
       )
@@ -95,13 +128,6 @@ export class Item {
         resumenDeudas.add(new Deuda({
           persona: consumicion.persona,
           monto: consumicion.porciones * this.gasto.precio / cantPorciones
-        }))
-      }
-    } else {
-      for (const consumicion of this.consumiciones) {
-        resumenDeudas.add(new Deuda({
-          persona: consumicion.persona,
-          monto: consumicion.porciones * this.gasto.precio
         }))
       }
     }
@@ -117,6 +143,7 @@ export class Item {
       gasto: this.gasto.toPOJO(),
       consumiciones: this.consumiciones.map(c => c.toPOJO()),
       compartido: this.compartido,
+      seDivideEnPartesIguales: this.seDivideEnPartesIguales,
     }
   }
 
@@ -129,7 +156,8 @@ export class Item {
       id: pojo.id,
       gasto: Gasto.fromPOJO(pojo.gasto),
       consumiciones: pojo.consumiciones.map(c => Consumicion.fromPOJO(c)),
-      compartido: pojo.compartido
+      compartido: pojo.compartido,
+      seDivideEnPartesIguales: pojo.seDivideEnPartesIguales
     })
   }
 }
