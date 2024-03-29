@@ -422,7 +422,7 @@ export class View {
         if (!consumicion) {
           const checkbox = document.createElement('input')
           checkbox.type = 'checkbox'
-          checkbox.classList.add('bigger')
+          checkbox.classList.add('bigger-checkbox')
           checkbox.checked = false
           checkbox.onclick = async (event) => {
             if (checkbox.checked) {
@@ -436,7 +436,7 @@ export class View {
           if (item.compartido && item.seDivideEnPartesIguales) {
             const checkbox = document.createElement('input')
             checkbox.type = 'checkbox'
-            checkbox.classList.add('bigger')
+            checkbox.classList.add('bigger-checkbox')
             checkbox.checked = true
             checkbox.onclick = async (event) => {
               if (!checkbox.checked) {
