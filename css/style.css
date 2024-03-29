@@ -97,8 +97,9 @@ td:nth-child(3) {
   justify-content: center;
 }
 
-.bigger {
-  transform: scale(1.4);
+.bigger-checkbox {
+  width: 1em;
+  height: 1em;
 }
 
 input[type="checkbox"] {
