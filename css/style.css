@@ -98,8 +98,8 @@ td:nth-child(3) {
 }
 
 .bigger-checkbox {
-  width: 1.3em;
-  height: 1.3em;
+  width: 2em;
+  height: 2em;
 }
 
 input[type="checkbox"] {
