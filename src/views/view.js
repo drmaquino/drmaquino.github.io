@@ -376,7 +376,6 @@ export class View {
       checkboxCompartir.onclick = async (event) => {
         if (checkboxCompartir.checked) {
           await this.model.marcarGastoEnCompraComoCompartido(item.gasto.id)
-          await this.model.dejarDeDividirGastoEnCompraEnPartesIguales(item.gasto.id)
         } else {
           await this.model.marcarGastoEnCompraComoNoCompartido(item.gasto.id)
         }

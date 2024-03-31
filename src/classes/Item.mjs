@@ -81,10 +81,12 @@ export class Item {
 
   compartir() {
     this.compartido = true
+    this.seDivideEnPartesIguales = true
   }
 
   dejarDeCompartir() {
     this.compartido = false
+    this.seDivideEnPartesIguales = false
   }
 
   dividirEnPartesIguales() {
