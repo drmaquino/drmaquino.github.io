@@ -23,8 +23,8 @@ await sistema.init()
 
 const view = new View(sistema)
 
+view.activeView = 'personas'
 // view.activeView = 'gastos'
-// view.activeView = 'personas'
-view.activeView = 'compraEnCurso'
+// view.activeView = 'compraEnCurso'
 
 await view.refresh()
