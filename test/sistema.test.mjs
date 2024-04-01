@@ -11,10 +11,10 @@ const mockDatosGasto1 = { nombre: '1 Viatico', precio: 100 }
 const mockDatosGasto2 = { nombre: '2 Salidas', precio: 200 }
 const mockDatosGasto3 = { nombre: '3 Comidas', precio: 300 }
 
-describe('cuanto pago', () => {
-  describe('personas', () => {
-    describe('al agendar una nueva persona', () => {
-      it('la agrega al sistema', async (t) => {
+describe(' cuanto pago', () => {
+  describe('1 personas', () => {
+    describe('1.1 al agendar una nueva persona', () => {
+      it('1.1.1 la agrega al sistema', async (t) => {
         const sistema = await crearSistema()
         const p1 = await sistema.agendarPersona(mockDatosPersona1)
         const personasEsperadas = mockearPersonas([p1])
@@ -24,7 +24,7 @@ describe('cuanto pago', () => {
           personasEsperadas,
           'Personas en sistema')
       })
-      it('la agrega a la compra en curso', async (t) => {
+      it('1.1.2 la agrega a la compra en curso', async (t) => {
         const sistema = await crearSistema()
         const p1 = await sistema.agendarPersona(mockDatosPersona1)
         const personasEnCompraEsperadas = [p1]
@@ -36,8 +36,37 @@ describe('cuanto pago', () => {
       })
     })
 
-    describe('al quitarla de la compra', () => {
-      it('sigue agendada en el sistema', async () => {
+    describe('1.2 al editar el nombre de una persona', () => {
+      it('1.2.1 lo modifica en el sistema', async (t) => {
+        const NUEVO_NOMBRE = 'test'
+        const sistema = await crearSistema()
+        const p1 = await sistema.agendarPersona(mockDatosPersona1)
+        await sistema.modificarNombrePersona({ idPersona: p1.id, nombre: NUEVO_NOMBRE })
+        const personasEsperadas = mockearPersonas([{ ...p1, nombre: NUEVO_NOMBRE }])
+        const personasObtenidas = await sistema.verPersonas()
+        assert.deepStrictEqual(
+          personasObtenidas,
+          personasEsperadas,
+          'Personas en sistema')
+      })
+      // it('1.2.1 modifica las consumiciones que lo incluyen', async (t) => {
+      //   const sistema = await crearSistema()
+      //   const p1 = await sistema.agendarPersona(mockDatosPersona1)
+      //   const g1 = await sistema.agendarGasto(mockDatosGasto1)
+      //   await sistema.aumentarConsumicion({ idPersona: p1.id, idGasto: g1.id })
+      //   await sistema.modificarPrecioGasto({ idGasto: g1.id, precio: 1000 })
+
+      //   const deudasEsperadas = mockearDeudas([p1, 1000])
+      //   const deudasObtenidas = await sistema.verDeudasCompraEnCurso()
+      //   assert.deepStrictEqual(
+      //     deudasObtenidas,
+      //     deudasEsperadas,
+      //     'Deudas')
+      // })
+    })
+
+    describe('1.3 al quitarla de la compra', () => {
+      it('1.3.1 sigue agendada en el sistema', async () => {
         const sistema = await crearSistema()
         const p1 = await sistema.agendarPersona(mockDatosPersona1)
         await sistema.quitarPersonaDeCompraEnCurso(p1.id)
@@ -49,7 +78,7 @@ describe('cuanto pago', () => {
           personasEsperadas,
           'Personas en sistema')
       })
-      it('desaparece de la compra en curso', async () => {
+      it('1.3.2 desaparece de la compra en curso', async () => {
         const sistema = await crearSistema()
         const p1 = await sistema.agendarPersona(mockDatosPersona1)
         await sistema.quitarPersonaDeCompraEnCurso(p1.id)
@@ -61,7 +90,7 @@ describe('cuanto pago', () => {
           personasEnCompraEsperadas,
           'Personas en compra')
       })
-      it('desaparecen sus consumiciones de la compra en curso', async () => {
+      it('1.3.3 desaparecen sus consumiciones de la compra en curso', async () => {
         const sistema = await crearSistema()
         const p1 = await sistema.agendarPersona(mockDatosPersona1)
         const g1 = await sistema.agendarGasto(mockDatosGasto1)
@@ -77,8 +106,8 @@ describe('cuanto pago', () => {
       })
     })
 
-    describe('al eliminarla del sistema', () => {
-      it('desaparece del sistema', async () => {
+    describe('1.4 al eliminarla del sistema', () => {
+      it('1.4.1 desaparece del sistema', async () => {
         const sistema = await crearSistema()
         const p1 = await sistema.agendarPersona(mockDatosPersona1)
         await sistema.eliminarPersona(p1.id)
@@ -90,7 +119,7 @@ describe('cuanto pago', () => {
           personasEsperadas,
           'Personas en sistema')
       })
-      it('desaparece de la compra en curso', async () => {
+      it('1.4.2 desaparece de la compra en curso', async () => {
         const sistema = await crearSistema()
         const p1 = await sistema.agendarPersona(mockDatosPersona1)
         await sistema.eliminarPersona(p1.id)
@@ -102,7 +131,7 @@ describe('cuanto pago', () => {
           personasEnCompraEsperadas,
           'Personas en compra')
       })
-      it('desaparecen sus consumiciones de la compra en curso', async () => {
+      it('1.4.3 desaparecen sus consumiciones de la compra en curso', async () => {
         const sistema = await crearSistema()
         const p1 = await sistema.agendarPersona(mockDatosPersona1)
         const g1 = await sistema.agendarGasto(mockDatosGasto1)
@@ -118,8 +147,8 @@ describe('cuanto pago', () => {
       })
     })
 
-    describe('al eliminar a todas del sistema', () => {
-      it('desaparecen del sistema', async () => {
+    describe('1.5 al eliminar a todas del sistema', () => {
+      it('1.5.1 desaparecen del sistema', async () => {
         const sistema = await crearSistema()
         await sistema.agendarPersona(mockDatosPersona1)
         await sistema.agendarPersona(mockDatosPersona2)
@@ -132,7 +161,7 @@ describe('cuanto pago', () => {
           personasEsperadas,
           'Personas en sistema')
       })
-      it('desaparecen de la compra en curso', async () => {
+      it('1.5.2 desaparecen de la compra en curso', async () => {
         const sistema = await crearSistema()
         await sistema.agendarPersona(mockDatosPersona1)
         await sistema.agendarPersona(mockDatosPersona2)
@@ -145,7 +174,7 @@ describe('cuanto pago', () => {
           personasEnCompraEsperadas,
           'Personas en compra')
       })
-      it('desaparecen sus consumiciones de la compra en curso', async () => {
+      it('1.5.3 desaparecen sus consumiciones de la compra en curso', async () => {
         const sistema = await crearSistema()
         const p1 = await sistema.agendarPersona(mockDatosPersona1)
         const p2 = await sistema.agendarPersona(mockDatosPersona2)
@@ -163,10 +192,10 @@ describe('cuanto pago', () => {
       })
     })
   })
-  describe('gastos', () => {
+  describe('2 gastos', () => {
 
-    describe('al agendar un nuevo gasto', () => {
-      it('lo agrega al sistema', async (t) => {
+    describe('2.1 al agendar un nuevo gasto', () => {
+      it('2.1.1 lo agrega al sistema', async (t) => {
         const sistema = await crearSistema()
         const g1 = await sistema.agendarGasto(mockDatosGasto1)
         const gastosEsperados = mockearGastos([g1])
@@ -176,7 +205,7 @@ describe('cuanto pago', () => {
           gastosEsperados,
           'Gastos en sistema')
       })
-      it('lo agrega a la compra en curso', async (t) => {
+      it('2.1.2 lo agrega a la compra en curso', async (t) => {
         const sistema = await crearSistema()
         const g1 = await sistema.agendarGasto(mockDatosGasto1)
         const gastoEstaEnCompraEsperado = true
@@ -188,8 +217,8 @@ describe('cuanto pago', () => {
       })
     })
 
-    describe('al quitarlo de la compra', () => {
-      it('sigue agendado en el sistema', async () => {
+    describe('2.2 al quitarlo de la compra', () => {
+      it('2.2.1 sigue agendado en el sistema', async () => {
         const sistema = await crearSistema()
         const g1 = await sistema.agendarGasto(mockDatosGasto1)
         await sistema.quitarGastoDeCompraEnCurso(g1.id)
@@ -201,7 +230,7 @@ describe('cuanto pago', () => {
           gastosEsperados,
           'Gastos en sistema')
       })
-      it('desaparece de la compra en curso', async () => {
+      it('2.2.2 desaparece de la compra en curso', async () => {
         const sistema = await crearSistema()
         const g1 = await sistema.agendarGasto(mockDatosGasto1)
         await sistema.quitarGastoDeCompraEnCurso(g1.id)
@@ -213,7 +242,7 @@ describe('cuanto pago', () => {
           gastoEstaEnCompraEsperado,
           'Gasto en compra')
       })
-      it('desaparecen sus consumiciones de la compra en curso', async () => {
+      it('2.2.3 desaparecen sus consumiciones de la compra en curso', async () => {
         const sistema = await crearSistema()
         const p1 = await sistema.agendarPersona(mockDatosPersona1)
         const g1 = await sistema.agendarGasto(mockDatosGasto1)
@@ -229,8 +258,8 @@ describe('cuanto pago', () => {
       })
     })
 
-    describe('al eliminarlo del sistema', () => {
-      it('desaparece del sistema', async () => {
+    describe('2.3 al eliminarlo del sistema', () => {
+      it('2.3.1 desaparece del sistema', async () => {
         const sistema = await crearSistema()
         const g1 = await sistema.agendarGasto(mockDatosGasto1)
         await sistema.eliminarGasto(g1.id)
@@ -242,7 +271,7 @@ describe('cuanto pago', () => {
           gastosEsperados,
           'Gastos en sistema')
       })
-      it('desaparece de la compra en curso', async () => {
+      it('2.3.2 desaparece de la compra en curso', async () => {
         const sistema = await crearSistema()
         const g1 = await sistema.agendarGasto(mockDatosGasto1)
         await sistema.eliminarGasto(g1.id)
@@ -254,7 +283,7 @@ describe('cuanto pago', () => {
           gastoEstaEnCompraEsperado,
           'Gasto en compra')
       })
-      it('desaparecen sus consumiciones de la compra en curso', async () => {
+      it('2.3.3 desaparecen sus consumiciones de la compra en curso', async () => {
         const sistema = await crearSistema()
         const p1 = await sistema.agendarPersona(mockDatosPersona1)
         const g1 = await sistema.agendarGasto(mockDatosGasto1)
@@ -270,8 +299,8 @@ describe('cuanto pago', () => {
       })
     })
 
-    describe('al eliminar a todos del sistema', () => {
-      it('desaparecen del sistema', async () => {
+    describe('2.4 al eliminar a todos del sistema', () => {
+      it('2.4.1 desaparecen del sistema', async () => {
         const sistema = await crearSistema()
         await sistema.agendarGasto(mockDatosGasto1)
         await sistema.agendarGasto(mockDatosGasto2)
@@ -284,7 +313,7 @@ describe('cuanto pago', () => {
           gastosEsperados,
           'Gastos en sistema')
       })
-      it('desaparecen de la compra en curso', async () => {
+      it('2.4.2 desaparecen de la compra en curso', async () => {
         const sistema = await crearSistema()
         const g1 = await sistema.agendarGasto(mockDatosGasto1)
         const g2 = await sistema.agendarGasto(mockDatosGasto2)
@@ -304,7 +333,7 @@ describe('cuanto pago', () => {
           gasto2EstaEnCompraEsperado,
           'Gasto 2 en compra')
       })
-      it('desaparecen sus consumiciones de la compra en curso', async () => {
+      it('2.4.3 desaparecen sus consumiciones de la compra en curso', async () => {
         const sistema = await crearSistema()
         const p1 = await sistema.agendarPersona(mockDatosPersona1)
         const p2 = await sistema.agendarPersona(mockDatosPersona2)
@@ -322,8 +351,8 @@ describe('cuanto pago', () => {
       })
     })
 
-    describe('al editar el precio de un gasto', () => {
-      it('lo modifica en el sistema', async (t) => {
+    describe('2.5 al editar el precio de un gasto', () => {
+      it('2.5.1 lo modifica en el sistema', async (t) => {
         const sistema = await crearSistema()
         const g1 = await sistema.agendarGasto(mockDatosGasto1)
         await sistema.modificarPrecioGasto({ idGasto: g1.id, precio: 1000 })
@@ -334,7 +363,7 @@ describe('cuanto pago', () => {
           gastosEsperados,
           'Gastos en sistema')
       })
-      it('modifica las consumiciones que lo incluyen', async (t) => {
+      it('2.5.2 modifica las consumiciones que lo incluyen', async (t) => {
         const sistema = await crearSistema()
         const p1 = await sistema.agendarPersona(mockDatosPersona1)
         const g1 = await sistema.agendarGasto(mockDatosGasto1)
@@ -350,9 +379,9 @@ describe('cuanto pago', () => {
       })
     })
   })
-  describe('consumiciones', () => {
-    describe('al modificar las consumiciones', () => {
-      it('se ajustan las deudas de la compra en curso', async () => {
+  describe('3 consumiciones', () => {
+    describe('3.1 al modificar las consumiciones', () => {
+      it('3.1.1 se ajustan las deudas de la compra en curso', async () => {
         const sistema = await crearSistema()
 
         const p1 = await sistema.agendarPersona(mockDatosPersona1)
@@ -377,9 +406,9 @@ describe('cuanto pago', () => {
           'Deudas')
       })
     })
-    describe('al compartir un gasto entre varios', () => {
-      describe('dividiendolo en distintas proporciones', () => {
-        it('se ajustan las deudas de la compra en curso', async () => {
+    describe('3.2 al compartir un gasto entre varios', () => {
+      describe('3.2.1 dividiendolo en distintas proporciones', () => {
+        it('3.2.1.1 se ajustan las deudas de la compra en curso', async () => {
           const sistema = await crearSistema()
 
           const p1 = await sistema.agendarPersona(mockDatosPersona1)
@@ -404,8 +433,8 @@ describe('cuanto pago', () => {
             'Deudas')
         })
       })
-      describe('dividiendolo en partes iguales', () => {
-        it('se ajustan las deudas de la compra en curso', async () => {
+      describe('3.2.2 ividiendolo en partes iguales', () => {
+        it('3.2.2.1 se ajustan las deudas de la compra en curso', async () => {
           const sistema = await crearSistema()
 
           const p1 = await sistema.agendarPersona(mockDatosPersona1)

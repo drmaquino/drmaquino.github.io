@@ -36,6 +36,7 @@ const liTabGastos = typedQuerySelector('#liTabGastos', HTMLLIElement)
 const liTabCompraEnCurso = typedQuerySelector('#liTabCompraEnCurso', HTMLLIElement)
 
 const BTN_CONFIRM_COLOR = '#3c5999'
+const BTN_CANCEL_COLOR = '#6e7881'
 
 export class View {
 
@@ -151,7 +152,7 @@ export class View {
       const aNode = document.createElement('a')
       aNode.replaceChildren(persona.nombre)
       aNode.onclick = () => {
-        this.preguntarSiBorrarPersona({
+        this.mostrarMenuPersona({
           nombrePersona: persona.nombre,
           idPersona: persona.id,
         })
@@ -571,6 +572,57 @@ export class View {
 
   // ------------------------------------------------------------------
 
+  async mostrarMenuPersona({ idPersona, nombrePersona }) {
+    // @ts-ignore
+    const result = await Swal.fire({
+      title: `Qué deseas hacer con ${nombrePersona}?`,
+
+      showCancelButton: true,
+      showDenyButton: true,
+
+      confirmButtonText: 'Renombrar',
+      denyButtonText: 'Eliminar',
+      cancelButtonText: `Cancelar`,
+
+      confirmButtonColor: BTN_CONFIRM_COLOR,
+      denyButtonColor: BTN_CONFIRM_COLOR,
+      cancelButtonColor: BTN_CANCEL_COLOR,
+
+      customClass: {
+        actions: 'd-flex flex-column align-items-stretch',
+      }
+    })
+    if (result.isConfirmed) {
+      await this.preguntarSiEditarNombrePersona({ idPersona, nombrePersona })
+    } else if (result.isDenied) {
+      await this.preguntarSiBorrarPersona({ idPersona, nombrePersona })
+    }
+  }
+
+  async preguntarSiEditarNombrePersona({ idPersona, nombrePersona }) {
+    // @ts-ignore
+    const result = await Swal.fire({
+      title: nombrePersona,
+      input: 'text',
+      inputLabel: 'Ingrese el nuevo nombre',
+      showCancelButton: true,
+      confirmButtonText: 'Modificar',
+      cancelButtonText: `Cancelar`,
+      inputValidator: (value) => {
+        if (!value || !String(value).trim()) {
+          return 'El nombre no puede quedar vacío'
+        }
+      },
+      confirmButtonColor: BTN_CONFIRM_COLOR,
+    })
+
+    if (result.isConfirmed) {
+      await this.model.modificarNombrePersona({ idPersona, nombre: capitalized(result.value) })
+      await this.model.quitarPersonaDeCompraEnCurso(idPersona) //TODO: esto es temporal!!!
+      await this.actualizarListaPersonas()
+    }
+  }
+
   async preguntarSiBorrarPersona({ nombrePersona, idPersona }) {
     // @ts-ignore
     const result = await Swal.fire({
@@ -618,10 +670,7 @@ export class View {
     })
     if (result.isConfirmed) {
       await this.model.eliminarTodasLasPersonas()
-
       await this.actualizarListaPersonas()
-      await this.actualizarTablaConsumiciones()
-      await this.actualizarTablaDeudas()
     }
   }
 
@@ -660,7 +709,6 @@ export class View {
 
     if (result.isConfirmed) {
       await this.model.eliminarGasto(idGasto)
-
       await this.actualizarListaGastos()
     }
   }
@@ -677,6 +725,7 @@ export class View {
 
     if (result.isConfirmed) {
       await this.model.quitarGastoDeCompraEnCurso(idGasto)
+      await this.actualizarListaGastos()
       await this.actualizarTablaConsumiciones()
       await this.actualizarTablaDeudas()
     }

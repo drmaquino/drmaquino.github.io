@@ -94,6 +94,21 @@ export class Sistema {
   }
 
   /**
+   * @param {{ idPersona: string, nombre: string }} param0 
+   */
+  async modificarNombrePersona({ idPersona, nombre }) {
+
+    const persona = await this.personasRepository.findById(idPersona)
+    if (!persona) throw new Error('no se puede modificar el nombre de la persona: la persona no existe')
+
+    persona.nombre = nombre
+    await this.personasRepository.save(persona)
+
+    // this.compraEnCurso.modificarNombreEnConsumiciones({ idPersona, nombre })
+    // await this.comprasRepository.save(this.compraEnCurso)
+  }
+
+  /**
    * @param {string} idPersona 
    */
   async quitarPersonaDeCompraEnCurso(idPersona) {

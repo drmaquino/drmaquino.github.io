@@ -1,6 +1,7 @@
 :root {
   --bg-color: #7fb2ff;
   --btn-color-base: #3c5999;
+  --btn-cancel-color-base: #6e7881;
   --btn-color-activo: #4c72c3;
   --btn-border-color: #2c4988;
   --font-color: #dbe6ff;
@@ -39,14 +40,31 @@ th {
   font-size: var(--font-size-small);
 }
 
-.btn-primary {
+.btn {
+  margin: .3125em;
+  padding: .625em 1.1em;
+  transition: box-shadow .1s;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0);
+  font-weight: 500;
+  border: 0;
+  border-radius: .25em;
+  font-size: 1em;
+  background: initial;
+  color: #fff;
+}
+
+.btn-primary,
+.btn-primary:focus {
   background-color: var(--btn-color-base);
-  border-color: var(--btn-color-base);
 }
 
 .btn-primary:hover {
   background-color: var(--btn-color-activo);
-  border-color: var(--btn-color-activo);
+}
+
+.btn-cancel,
+.btn-cancel:focus {
+  background-color: var(--btn-cancel-color-base);
 }
 
 main {
