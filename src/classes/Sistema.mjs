@@ -103,6 +103,7 @@ export class Sistema {
 
     persona.nombre = nombre
     await this.personasRepository.save(persona)
+    await this.quitarPersonaDeCompraEnCurso(idPersona) // TODO: provisorio!!
 
     // this.compraEnCurso.modificarNombreEnConsumiciones({ idPersona, nombre })
     // await this.comprasRepository.save(this.compraEnCurso)
@@ -171,6 +172,22 @@ export class Sistema {
 
     this.compraEnCurso.agregarItem(gasto)
     await this.comprasRepository.save(this.compraEnCurso)
+  }
+
+  /**
+   * @param {{ idGasto: string, nombre: string }} param0 
+   */
+  async modificarNombreGasto({ idGasto, nombre }) {
+
+    const gasto = await this.gastosRepository.findById(idGasto)
+    if (!gasto) throw new Error('no se puede modificar el nombre del gasto: el gasto no existe')
+
+    gasto.nombre = nombre
+    await this.gastosRepository.save(gasto)
+    await this.quitarGastoDeCompraEnCurso(idGasto) // TODO: provisorio!!
+
+    // this.compraEnCurso.modificarNombreEnConsumiciones({ idPersona, nombre })
+    // await this.comprasRepository.save(this.compraEnCurso)
   }
 
   /**

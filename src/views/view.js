@@ -231,7 +231,7 @@ export class View {
       const aNodeNombre = document.createElement('a')
       aNodeNombre.innerHTML = gasto.nombre
       aNodeNombre.onclick = () => {
-        this.preguntarSiBorrarGasto({
+        this.mostrarMenuGasto({
           idGasto: gasto.id,
           nombreGasto: gasto.nombre,
         })
@@ -618,7 +618,6 @@ export class View {
 
     if (result.isConfirmed) {
       await this.model.modificarNombrePersona({ idPersona, nombre: capitalized(result.value) })
-      await this.model.quitarPersonaDeCompraEnCurso(idPersona) //TODO: esto es temporal!!!
       await this.actualizarListaPersonas()
     }
   }
@@ -671,6 +670,56 @@ export class View {
     if (result.isConfirmed) {
       await this.model.eliminarTodasLasPersonas()
       await this.actualizarListaPersonas()
+    }
+  }
+
+  async mostrarMenuGasto({ idGasto, nombreGasto }) {
+    // @ts-ignore
+    const result = await Swal.fire({
+      title: `Qué deseas hacer con ${nombreGasto}?`,
+
+      showCancelButton: true,
+      showDenyButton: true,
+
+      confirmButtonText: 'Renombrar',
+      denyButtonText: 'Eliminar',
+      cancelButtonText: `Cancelar`,
+
+      confirmButtonColor: BTN_CONFIRM_COLOR,
+      denyButtonColor: BTN_CONFIRM_COLOR,
+      cancelButtonColor: BTN_CANCEL_COLOR,
+
+      customClass: {
+        actions: 'd-flex flex-column align-items-stretch',
+      }
+    })
+    if (result.isConfirmed) {
+      await this.preguntarSiEditarNombreGasto({ idGasto, nombreGasto })
+    } else if (result.isDenied) {
+      await this.preguntarSiBorrarGasto({ idGasto, nombreGasto })
+    }
+  }
+
+  async preguntarSiEditarNombreGasto({ idGasto, nombreGasto }) {
+    // @ts-ignore
+    const result = await Swal.fire({
+      title: nombreGasto,
+      input: 'text',
+      inputLabel: 'Ingrese el nuevo nombre',
+      showCancelButton: true,
+      confirmButtonText: 'Modificar',
+      cancelButtonText: `Cancelar`,
+      inputValidator: (value) => {
+        if (!value || !String(value).trim()) {
+          return 'El nombre no puede quedar vacío'
+        }
+      },
+      confirmButtonColor: BTN_CONFIRM_COLOR,
+    })
+
+    if (result.isConfirmed) {
+      await this.model.modificarNombreGasto({ idGasto, nombre: capitalized(result.value) })
+      await this.actualizarListaGastos()
     }
   }
 
